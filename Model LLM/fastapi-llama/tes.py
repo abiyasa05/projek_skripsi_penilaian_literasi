@@ -14,7 +14,7 @@ app.add_middleware(
 )
 
 # Ganti dengan token API Hugging Face kamu
-HF_TOKEN = "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"
+HF_TOKEN = ""
 client = InferenceClient(model="TinyLlama/TinyLlama-1.1B-chat-v1.0", token=HF_TOKEN)
 
 # Data ringkasan cerita, pantun, dan puisi (bisa ditambah lagi)
