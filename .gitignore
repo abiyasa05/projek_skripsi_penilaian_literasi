@@ -13,8 +13,7 @@
 
 # Mengabaikan folder dan file terkait Python
 venv/
-__pycache__/
-*.pyc
+lib/
 
 # Mengabaikan file sistem yang tidak diinginkan (MacOS, Windows)
 .DS_Store
