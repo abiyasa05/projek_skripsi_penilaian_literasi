@@ -31,9 +31,7 @@ Route::group(['middleware' => ['auth', 'student']], function () {
         Route::get('/{id}', [LiteracyAssessmentController::class, 'show'])->name('literacy_assessments_show');
         Route::post('/start/{id}', [LiteracyAssessmentController::class, 'start'])->name('literacy_assessments_start');
         Route::get('/continue/{id}', [LiteracyAssessmentController::class, 'continue'])->name('literacy_assessments_continue');
-        Route::post('/assessments/{assessment}/answer', [LiteracyAssessmentController::class, 'storeAnswer'])
-            ->name('literacy_assessments_store_answer');
-        Route::post('/literacy/assessments/{assessmentId}/store-answer', [LiteracyAssessmentController::class, 'storeAnswer'])->name('literacy_assessment_store_answer');
+        Route::post('/assessments/{assessmentId}/save-answer', [LiteracyAssessmentController::class, 'storeAnswer'])->name('literacy_assessment_store_answer');
     });
 });
 
