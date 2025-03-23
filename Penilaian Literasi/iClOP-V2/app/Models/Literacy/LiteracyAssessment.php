@@ -18,6 +18,7 @@ class LiteracyAssessment extends Model
         'status',
         'score',
         'feedback',
+        'answer_text',
         'assessed_at',
         'created_at',
     ];
