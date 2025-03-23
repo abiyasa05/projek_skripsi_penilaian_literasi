@@ -71,7 +71,8 @@ class LiteracyQuestionController extends Controller
 
     public function publishAssessment()
     {
-        $users = User::all();
+        // Ambil hanya pengguna dengan role 'student'
+        $users = User::where('role', 'student')->get();
         $questionsCount = LiteracyQuestion::count();
 
         if ($questionsCount === 0) {
@@ -91,6 +92,7 @@ class LiteracyQuestionController extends Controller
                 ]
             );
         }
+
         return redirect()->back()->with('success', 'Asesmen berhasil dipublikasikan untuk semua siswa.');
     }
 
