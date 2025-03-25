@@ -292,7 +292,7 @@
                         @if(Auth::user()->role === 'teacher')
                             <a href="{{ route('literacy_teacher_users') }}" class="btn btn-primary">Start Learning</a>
                         @elseif(Auth::user()->role === 'student')
-                            <a href="{{ route('literacy_assessments') }}" class="btn btn-primary">Start Learning</a>
+                            <a href="{{ route('literacy_student_materials') }}" class="btn btn-primary">Start Learning</a>
                         @endif
                     </div>           
                 </div>
