@@ -9,7 +9,7 @@ class LiteracyAnswer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['question_id', 'option_id', 'assessment_id', 'answer_text', 'submitted_at', 'created_at', 'updated_at'];
+    protected $fillable = ['question_id', 'option_id', 'assessment_id', 'answer_text', 'submitted_at', 'feedback', 'created_at', 'updated_at'];
 
     public function question()
     {
