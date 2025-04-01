@@ -307,7 +307,7 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="#" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
@@ -341,9 +341,8 @@
                         <!-- Form untuk generate question -->
                         <form id="aiForm" class="mt-4">
                             <div class="mb-3">
-                                <label for="content" class="form-label">Enter Content:</label>
-                                <textarea id="content" name="content" class="form-control" rows="3"
-                                    placeholder="Masukkan teks atau judul literasi..."></textarea>
+                                <textarea id="content" name="content" class="form-control" rows="3">
+                                </textarea>
                             </div>
                             <button type="submit" class="btn btn-primary">Generate</button>
                         </form>
@@ -353,17 +352,6 @@
                         <!-- Form untuk menyimpan pertanyaan -->
                         <form action="{{ route('literacy_questions_store') }}" method="POST" id="questionForm" class="mt-4">
                             @csrf
-                
-                            <!-- Pilihan Materi -->
-                            <div class="mb-3">
-                                <label for="material_id" class="form-label">Materi</label>
-                                <select name="material_id" class="form-control" required>
-                                    <option value="">Pilih Materi</option>
-                                    @foreach ($materials as $material)
-                                        <option value="{{ $material->id }}">{{ $material->title }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
                 
                             <!-- Teks Pertanyaan -->
                             <div class="mb-3">
