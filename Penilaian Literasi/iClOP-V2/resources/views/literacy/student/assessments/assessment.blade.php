@@ -182,6 +182,7 @@
         };
     </script>
     <link rel="icon" href="./images/logo.png" type="image/png">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body>
@@ -231,7 +232,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- SIDEBAR -->
-            <nav class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow">
+            <nav class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow" style="position: sticky; top: 20px;">
                 <div class="sidebar-sticky" style="margin-top: 20px;">
                     <ul class="nav flex-column">
                         <li class="nav-item" style="margin-bottom: 40px;">
@@ -247,7 +248,7 @@
                                 </div>
                             </div>
                         </li>
-
+    
                         <li class="nav-item">
                             <div class="row align-items-start">
                                 <div class="col-2">
@@ -260,7 +261,7 @@
                                 </div>
                             </div>
                         </li>
-
+    
                         <li class="nav-item">
                             <div class="row align-items-start">
                                 <div class="col-2">
@@ -273,7 +274,7 @@
                                 </div>
                             </div>
                         </li>
-
+    
                         <li class="nav-item">
                             <div class="row align-items-start">
                                 <div class="col-2">
@@ -292,75 +293,137 @@
                     </ul>
                 </div>
             </nav>
-            <!-- ------------------------------------------------------------------------------------------ -->
+    
+            <!-- CONTENT DAN NAVIGASI SOAL -->
+            @php
+                $multipleChoiceQuestions = $questions->filter(fn($q) => $q->options->isNotEmpty());
+                $essayQuestions = $questions->filter(fn($q) => $q->options->isEmpty());
+                $multipleChoiceNumber = 0;
+                $essayNumber = 0;
+            @endphp
 
-            <!-- CONTENT -->
-            <main class="col-md-9">
-                {{-- @foreach ($questions as $question)
-                <div class="mb-3">
-                    <p>{{ $question->question_text }}</p>
-
-                    @if ($question->type == 'multiple_choice')
-                    @foreach ($question->options as $option)
-                    <label>
-                        <input type="radio" name="question_{{ $question->id }}" class="answer-input"
-                            data-question-id="{{ $question->id }}" value="{{ $option->id }}">
-                        {{ $option->option_text }}
-                    </label><br>
-                    @endforeach
-                    @else
-                    <textarea class="answer-input form-control" data-question-id="{{ $question->id }}"></textarea>
-                    @endif
-                </div>
-                @endforeach --}}
-
+            <main class="col-md-8">
                 <div class="grid grid-cols-12 gap-6 p-6">
-                    <!-- Konten Asesmen -->
-                    <div class="col-span-12 lg:col-span-9 space-y-8"> <!-- Menggunakan col-span-12 untuk mobile, dan lg:col-span-9 untuk desktop -->
-                        <h1 class="text-xl font-bold">Harap menjawab semua pertanyaan</h1>
-                        <p class="text-gray-600 text-sm">Semua jawaban akan dinilai</p>
-                    
-                        <!-- Loop Soal -->
-                        @foreach ($questions as $question)
-                            <div class="bg-white shadow-md rounded-lg p-4 border mb-4">
-                                <h5 class="text-base font-medium mb-3">
-                                    <!-- Menampilkan nomor dan soal dengan menjaga pemformatan -->
-                                    <span class="whitespace-pre-line">{{ $loop->iteration }}. {{ $question->question_text }}</span>
-                                </h5>
-                    
-                                <!-- Pilihan Jawaban -->
-                                <div class="mt-3">
-                                    @if ($question->options->isNotEmpty())
-                                        <div class="space-y-3 hover:bg-gray-500"> <!-- Menambahkan jarak antar opsi dan membuatnya vertikal -->
+                    <div class="col-span-12 lg:col-span-9 space-y-8">
+                        <!-- Bagian Pilihan Ganda -->
+                        @if ($multipleChoiceQuestions->isNotEmpty())
+                            <h4 class="text-base font-semibold mt-6">Bagian 1: Pilihan Ganda</h4>
+                            <p class="text-gray-500 text-sm mb-3">Pilih salah satu jawaban yang paling tepat.</p>
+
+                            @foreach ($multipleChoiceQuestions as $question)
+                                @php 
+                                    $multipleChoiceNumber++; 
+                                    $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
+                                @endphp
+                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-mc-{{ $multipleChoiceNumber }}">
+                                    <h5 class="text-base font-medium mb-3">
+                                        <span class="whitespace-pre-line">{{ $multipleChoiceNumber }}. {{ $question->question_text }}</span>
+                                    </h5>
+
+                                    <div class="mt-3">
+                                        <div class="space-y-3">
                                             @foreach ($question->options as $option)
                                                 <label class="block p-3 border rounded-sm cursor-pointer w-100">
-                                                    <input type="radio" name="question_{{ $question->id }}" value="{{ $option->id }}" class="form-radio mt-1" onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}')">
-                                                    <span class="text-gray-700 text-md">{{ $option->option_text }}</span>
+                                                    <input type="radio" name="question_{{ $question->id }}" 
+                                                    value="{{ $option->id }}" class="form-radio"
+                                                    onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}'); updateQuestionUI('mc', '{{ $question->id }}');"
+                                                    {{ $savedAnswer && $savedAnswer->option_id == $option->id ? 'checked' : '' }}>
+                                                    <span>{{ $option->option_text }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
-                                    @else
-                                        <!-- Jika tidak ada option, gunakan textarea -->
-                                        <textarea name="question_{{ $question->id }}" class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200" placeholder="Masukkan jawaban Anda di sini..." onchange="saveAnswer('{{ $question->id }}', this.value)"></textarea>
-                                    @endif
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>                    
-                
-                    <!-- Navigasi Halaman -->
-                    <div class="col-span-12 lg:col-span-3 bg-white shadow-lg rounded-lg p-4"> <!-- Menambahkan col-span-12 untuk tampilan mobile dan lg:col-span-3 untuk desktop -->
-                        <h2 class="text-base font-medium mb-3">Navigasi Halaman</h2>
-                        <div class="grid grid-cols-5 gap-2">
-                            @for ($i = 1; $i <= 17; $i++)
-                                <button class="w-10 h-10 text-sm rounded-lg {{ $i == 6 ? 'bg-red-500 text-white' : 'bg-gray-100' }}">
-                                    {{ $i }}
-                                </button>
-                            @endfor
+                            @endforeach
+                        @endif
+
+                        <!-- Bagian Isian -->
+                        @if ($essayQuestions->isNotEmpty())
+                            <h4 class="text-base font-semibold mt-6">Bagian 2: Isian</h4>
+                            <p class="text-gray-500 text-sm mb-3">Jawablah pertanyaan berikut dengan jawaban yang sesuai.</p>
+
+                            @foreach ($essayQuestions as $question)
+                                @php 
+                                    $essayNumber++; 
+                                    $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
+                                @endphp
+                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-essay-{{ $essayNumber }}">
+                                    <h5 class="text-base font-medium mb-3">
+                                        <span class="whitespace-pre-line">{{ $essayNumber }}. {{ $question->question_text }}</span>
+                                    </h5>
+
+                                    <div class="mt-3">
+                                        <textarea name="question_{{ $question->id }}"
+                                            class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200"
+                                            placeholder="Masukkan jawaban Anda di sini..."
+                                            oninput="saveAnswer('{{ $question->id }}', this.value); updateQuestionUI('essay', '{{ $question->id }}');">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+                </div>
+            </main>
+    
+            <!-- NAVIGASI NOMOR SOAL -->
+            <aside class="col-md-2 d-flex flex-column align-items-end" style="position: sticky; top: 20px; height: fit-content;">
+                <div class="card p-3">
+                    <h5 class="font-bold mb-3">Navigasi Soal</h5>
+            
+                    <!-- Navigasi Pilihan Ganda -->
+                    <div class="mb-3">
+                        <h6 class="font-bold text-secondary">Pilihan Ganda</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @php $multipleChoiceNumber = 0; @endphp
+                            @foreach ($questions as $question)
+                                @if ($question->options->isNotEmpty())
+                                    @php 
+                                        $multipleChoiceNumber++; 
+                                        $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
+                                        $btnClass = $savedAnswer && $savedAnswer->option_id ? 'btn-primary border-white' : 'btn-outline-secondary';
+                                    @endphp
+                                    <button id="nav-mc-{{ $multipleChoiceNumber }}" 
+                                        class="btn {{ $btnClass }}" 
+                                        onclick="navigateToQuestion('mc', {{ $multipleChoiceNumber }})"
+                                        data-question-id="{{ $question->id }}">
+                                        {{ $multipleChoiceNumber }}
+                                    </button>
+                                @endif
+                            @endforeach
                         </div>
                     </div>
-                </div>                                                                                                            
-            </main>
+            
+                    <!-- Navigasi Isian -->
+                    <div class="mb-3">
+                        <h6 class="font-bold text-secondary">Isian</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @php $essayNumber = 0; @endphp
+                            @foreach ($questions as $question)
+                                @if ($question->options->isEmpty())
+                                    @php 
+                                        $essayNumber++; 
+                                        $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
+                                        $btnClass = $savedAnswer && $savedAnswer->answer_text ? 'btn-primary border-white' : 'btn-outline-secondary';
+                                    @endphp
+                                    <button id="nav-essay-{{ $essayNumber }}" 
+                                        class="btn {{ $btnClass }}" 
+                                        onclick="navigateToQuestion('essay', {{ $essayNumber }})"
+                                        data-question-id="{{ $question->id }}">
+                                        {{ $essayNumber }}
+                                    </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-primary w-100 py-2 fw-semibold" onclick="checkUnansweredQuestions()">
+                            Selesai
+                        </button>
+                    </div>
+                </div>
+            </aside>
+            @include('literacy.student.assessments.modals.confirmation')
+            @include('literacy.student.assessments.modals.unanswered_warning')                                           
         </div>
     </div>
 
@@ -386,20 +449,93 @@
     </div>
 
     <script>
-        function saveAnswer(questionId, answer) {
-            // Kirim AJAX request ke controller untuk menyimpan jawaban
-            axios.post('{{ route('literacy_assessment_store_answer', $assessment->id) }}', {
-                question_id: questionId,
-                answer: answer,
-            })
-            .then(response => {
-                if (response.data.success) {
-                    console.log('Jawaban disimpan!');
+        function checkUnansweredQuestions() {
+            let unansweredCount = 0;
+
+            // Cek soal pilihan ganda (radio button)
+            @foreach ($multipleChoiceQuestions as $question)
+                if (!$("input[name='question_{{ $question->id }}']:checked").val()) {
+                    unansweredCount++;
                 }
-            })
-            .catch(error => {
-                console.error('Terjadi kesalahan:', error);
-            });
+            @endforeach
+
+            // Cek soal isian (textarea)
+            @foreach ($essayQuestions as $question)
+                if (!$("textarea[name='question_{{ $question->id }}']").val().trim()) {
+                    unansweredCount++;
+                }
+            @endforeach
+
+            console.log("Soal yang belum dijawab:", unansweredCount); // Debugging
+
+            if (unansweredCount > 0) {
+                $("#unansweredCount").text(unansweredCount);
+                $("#unansweredWarningModal").modal("show"); // Tampilkan modal peringatan
+            } else {
+                $("#confirmSubmitModal").modal("show"); // Tampilkan modal konfirmasi
+            }
+        }
+    </script>
+    <script>
+        async function saveAnswer(questionId, answer) {
+            const assessmentId = "{{ $assessment->id }}";
+
+            try {
+                const response = await fetch(`/literacy/student/assessments/${assessmentId}/save-answer`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                    },
+                    body: JSON.stringify({
+                        question_id: questionId,
+                        answer: answer
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log("Jawaban berhasil disimpan:", data);
+            } catch (error) {
+                console.error("Gagal menyimpan jawaban:", error);
+            }
+        }
+
+        // function updateNavigationButton(questionId) {
+        //     const navButton = document.querySelector(`button[data-question-id='${questionId}']`);
+
+        //     if (navButton) {
+        //         navButton.classList.remove("btn-outline-secondary");
+        //         navButton.classList.add("btn-primary", "border-white");
+        //     }
+        // }
+    </script>
+
+    <script>
+        function navigateToQuestion(type, number) {
+            const questionElement = document.getElementById(`question-${type}-${number}`);
+            if (questionElement) {
+                questionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    </script>
+
+    <script>
+        function updateQuestionUI(type, questionId) {
+            const navButton = document.querySelector(`button[data-question-id='${questionId}']`);
+            const questionCard = document.getElementById(`question-${type}-${questionId}`);
+
+            if (navButton) {
+                navButton.classList.remove("btn-outline-secondary");
+                navButton.classList.add("btn-primary", "border-white");
+            }
+
+            if (questionCard) {
+                questionCard.classList.add("border-blue-500");
+            }
         }
     </script>
 

@@ -255,7 +255,7 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link active" href="{{ route('literacy_teacher_questions') }}"
+                                    <a class="nav-link active" href="{{ route('literacy_student_materials') }}"
                                         style="color: #34364A;" id="manageQuestionsLink">Materials</a>
                                 </div>
                             </div>
@@ -317,9 +317,15 @@
                                                 <span class="badge 
                                                     @if ($assessment->status == 'completed') bg-success
                                                     @elseif ($assessment->status == 'in_progress') bg-warning
-                                                        @else bg-secondary
+                                                    @else bg-secondary
                                                     @endif">
-                                                    {{ ucfirst($assessment->status) }}
+                                                    @if ($assessment->status == 'completed')
+                                                        Selesai
+                                                    @elseif ($assessment->status == 'in_progress')
+                                                        Dalam Pengerjaan
+                                                    @else
+                                                        Belum Dikerjakan
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td>{{ $assessment->score ?? 'Belum Dinilai' }}</td>
@@ -327,12 +333,12 @@
                                                 @if ($assessment->status == 'pending')
                                                     <form action="{{ route('literacy_assessments_start', $assessment->id) }}" method="POST" style="display:inline;">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-primary">Mulai Mengerjakan</button>
+                                                        <button type="submit" class="btn btn-sm btn-primary text-white">Mulai</button>
                                                     </form>
                                                 @elseif ($assessment->status == 'in_progress')
-                                                    <a href="{{ route('literacy_assessments_continue', $assessment->id) }}" class="btn btn-warning">Lanjutkan</a>
+                                                    <a href="{{ route('literacy_assessments_continue', $assessment->id) }}" class="btn btn-sm btn-warning text-white">Lanjutkan</a>
                                                 @else
-                                                    <button class="btn btn-secondary" disabled>Selesai</button>
+                                                    <a href="{{ route('literacy_assessment_result', $assessment->id) }}" class="btn btn-sm btn-success">Lihat Hasil</a>
                                                 @endif
                                             </td>
                                         </tr>
@@ -341,7 +347,7 @@
                                             <td colspan="4" class="text-center text-muted">Belum ada asesmen</td>
                                         </tr>
                                     @endforelse
-                                </tbody>
+                                </tbody>                                
                             </table>
                         </div>
                     </div>
