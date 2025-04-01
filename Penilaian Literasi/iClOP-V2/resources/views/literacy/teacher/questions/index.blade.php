@@ -281,7 +281,8 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="{{ route('literacy_teacher_generate_questions') }}" style="color: #34364A;">AI Generated Questions</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_generate_questions') }}"
+                                        style="color: #34364A;">AI Generated Questions</a>
                                 </div>
                             </div>
                         </li>
@@ -306,7 +307,7 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="#" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
@@ -338,24 +339,24 @@
                     <div class="container mt-4">
                         <h3>Manage Questions</h3>
                         <p>This is the content for managing assessment questions.</p>
-                
-                        <div class="d-flex gap-2">
+
+                        <div class="d-flex gap-2 mb-3">
                             <button class="btn btn-dark" data-toggle="modal" data-target="#modalTambahPertanyaan">
                                 + Tambah Soal
                             </button>
 
-                            <form action="{{ route('literacy_questions_publish_assessment') }}" method="POST" id="questionForm">
+                            <form action="{{ route('literacy_questions_publish_assessment') }}" method="POST"
+                                id="questionForm" class="d-inline-block">
                                 @csrf
                                 <button type="submit" class="btn btn-primary">
                                     Publikasikan Asesmen
                                 </button>
                             </form>
-                            <br><br>
                         </div>
-                
+
                         <!-- Include Modal -->
                         @include('literacy.teacher.questions.modals.create')
-                
+
                         <div class="table-responsive mb-5">
                             <table id="progressTable" class="table table-striped">
                                 <thead>
@@ -371,7 +372,15 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $question->question_text }}</td>
-                                            <td>{{ ucfirst($question->type) }}</td>
+                                            <td>
+                                                @if ($question->type == 'multiple_choice')
+                                                    Pilihan Ganda
+                                                @elseif ($question->type == 'essay')
+                                                    Isian
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                             <td>
                                                 <button class="btn btn-sm btn-info text-white" data-toggle="modal"
                                                     data-target="#detailPertanyaanModal{{ $question->id }}">Detail</button>
@@ -454,6 +463,58 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".addOption").forEach(function (btn) {
+                btn.addEventListener("click", function (e) {
+                    let container = this.previousElementSibling;
+                    let index = container.querySelectorAll(".option-group").length;
+                    let div = document.createElement("div");
+
+                    div.classList.add("option-group", "mb-2", "d-flex", "align-items-center");
+                    div.innerHTML = `
+                        <input type="text" name="options[${index}][option_text]" class="form-control me-2" style="width: 40%;" placeholder="Opsi ${index + 1}" required>
+                        <input type="number" name="options[${index}][score]" class="form-control me-2" style="width: 15%;" placeholder="Skor" min="0" max="100" required>
+
+                        <label class="d-flex align-items-center ms-3">
+                            <input type="checkbox" name="options[${index}][is_correct]" value="1" class="me-2">
+                            <span>Benar</span>
+                        </label>
+
+                        <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
+                    `;
+
+                    container.appendChild(div);
+                });
+            });
+
+            document.addEventListener("click", function (e) {
+                if (e.target.classList.contains("remove-option")) {
+                    e.target.parentElement.remove();
+                }
+            });
+
+            document.querySelectorAll(".edit_questionType").forEach(function (select) {
+                select.addEventListener("change", function () {
+                    let parent = this.closest(".modal-content");
+                    let multipleChoiceOptions = parent.querySelector(".edit_multipleChoiceOptions");
+                    let essayScoreField = parent.querySelector("#edit_essayScoreField");
+                    let essayReferenceAnswerField = parent.querySelector("#edit_essayReferenceAnswerField");
+
+                    if (this.value === "multiple_choice") {
+                        multipleChoiceOptions.style.display = "block";
+                        essayScoreField.style.display = "none";
+                        essayReferenceAnswerField.style.display = "none";
+                    } else {
+                        multipleChoiceOptions.style.display = "none";
+                        essayScoreField.style.display = "block";
+                        essayReferenceAnswerField.style.display = "block";
+                    }
+                });
+            });
+        });
+    </script>
     <!-- JavaScript untuk mengubah konten tab -->
     <script>
         function materialModal(id, title, controller) {

@@ -306,7 +306,7 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="#" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
@@ -353,7 +353,6 @@
                                         <th>No</th>
                                         <th>Judul</th>
                                         <th>Deskripsi</th>
-                                        <th>File</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -363,14 +362,6 @@
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $material->title }}</td>
                                             <td>{{ $material->description ?? '-' }}</td>
-                                            <td>
-                                                @if ($material->file_path)
-                                                    <a href="{{ asset($material->file_path) }}" target="_blank"
-                                                        class="text-primary">Download</a>
-                                                @else
-                                                    Tidak ada file
-                                                @endif
-                                            </td>
                                             <td>
                                                 <button class="btn btn-sm btn-info text-white" data-toggle="modal"
                                                     data-target="#detailMateriModal{{ $material->id }}">Detail</button>

@@ -306,7 +306,7 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="#" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
