@@ -338,16 +338,33 @@
                 @php
                     $totalBenar = 0;
                     $totalSalah = 0;
+                    $essayThreshold = 50;
 
-                    // Hitung total benar dan salah terlebih dahulu (loop pertama)
+                    $normalize = function ($text) {
+                        $text = strtolower($text);
+                        $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
+                        $text = preg_replace('/\s+/', ' ', $text);
+                        return trim($text);
+                    };
+
                     foreach ($questions as $question) {
                         $answer = $question->answers->first();
                         $isCorrect = false;
 
                         if ($question->type === 'multiple_choice' && $answer) {
-                            $isCorrect = $answer->option->is_correct;
-                        } elseif ($question->type === 'essay') {
-                            $isCorrect = strtolower(trim($answer->answer_text)) === strtolower(trim($question->essay_answer));
+                            $isCorrect = optional($answer->option)->is_correct;
+                        } elseif ($question->type === 'essay' && $answer) {
+                            $userAnswer = $normalize($answer->answer_text ?? '');
+                            $correctAnswers = explode("\n", $question->essay_answer ?? '');
+                            $maxMatch = 0;
+
+                            foreach ($correctAnswers as $correct) {
+                                $correctNormalized = $normalize($correct);
+                                similar_text($userAnswer, $correctNormalized, $percent);
+                                $maxMatch = max($maxMatch, $percent);
+                            }
+
+                            $isCorrect = $maxMatch >= $essayThreshold;
                         }
 
                         if ($isCorrect) {
@@ -357,23 +374,21 @@
                         }
                     }
 
-                    // Mengubah status asesmen ke bahasa Indonesia
                     $statusMap = [
                         'completed' => 'Selesai',
                         'in_progress' => 'Sedang Dikerjakan',
                         'pending' => 'Menunggu',
                     ];
-                    $statusAsesmen = $statusMap[$assessment->status] ?? 'Tidak Dikenal';  // Menangani status yang tidak dikenal
+                    $statusAsesmen = $statusMap[$assessment->status] ?? 'Tidak Dikenal';
                 @endphp
 
                 <div class="content">
-                    <p style="font-size: 24px; font-weight: 500; color: #34364A;">Assessment Result</p>
+                    <p style="font-size: 24px; font-weight: 500; color: #34364A;">Hasil Asesmen Siswa</p>
                     <div class="mt-4">
                         <h5>Detail Jawaban</h5>
 
-                        <!-- Row for Pie Chart and User Information -->
                         <div class="row">
-                            <!-- Card with Pie Chart -->
+                            <!-- Pie Chart & Ringkasan -->
                             <div class="col-md-6">
                                 <div class="card mt-3 p-3 text-center shadow-sm">
                                     <h5 class="mb-2">Ringkasan Jawaban</h5>
@@ -381,7 +396,6 @@
                                         <strong class="text-success">Benar: {{ $totalBenar }}</strong> |
                                         <strong class="text-danger">Salah: {{ $totalSalah }}</strong>
                                     </p>
-                                    <!-- Pie Chart -->
                                     <div class="d-flex justify-content-center align-items-center">
                                         <canvas id="piechart" style="height: 150px; width: 150px;"></canvas>
                                     </div>
@@ -391,7 +405,7 @@
                                 </div>
                             </div>
 
-                            <!-- Card with User Information and Assessment Status -->
+                            <!-- Info Pengguna -->
                             <div class="col-md-6">
                                 <div class="card mt-3 p-3 shadow-sm">
                                     <h5 class="mb-2">Informasi Pengguna</h5>
@@ -408,13 +422,26 @@
                                                         @php
                                                             $answer = $question->answers->first();
                                                             $isCorrect = false;
+                                                            $similarityScore = null;
 
                                                             if ($question->type === 'multiple_choice' && $answer) {
-                                                                $isCorrect = $answer->option->is_correct;
-                                                            } elseif ($question->type === 'essay') {
-                                                                $isCorrect = strtolower(trim($answer->answer_text)) === strtolower(trim($question->essay_answer));
+                                                                $isCorrect = optional($answer->option)->is_correct;
+                                                            } elseif ($question->type === 'essay' && $answer) {
+                                                                $userAnswer = $normalize($answer->answer_text ?? '');
+                                                                $correctAnswers = explode("\n", $question->essay_answer ?? '');
+                                                                $maxMatch = 0;
+
+                                                                foreach ($correctAnswers as $correct) {
+                                                                    $correctNormalized = $normalize($correct);
+                                                                    similar_text($userAnswer, $correctNormalized, $percent);
+                                                                    $maxMatch = max($maxMatch, $percent);
+                                                                }
+
+                                                                $similarityScore = $maxMatch;
+                                                                $isCorrect = $maxMatch >= $essayThreshold;
                                                             }
                                                         @endphp
+
                                                         <li class="list-group-item d-flex flex-column">
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <strong>{{ $index + 1 }}. {{ $question->question_text }}</strong>
@@ -426,7 +453,7 @@
                                                             </div>
 
                                                             <p class="mt-2">
-                                                                <strong>Jawaban Anda:</strong>
+                                                                <strong>Jawaban Siswa:</strong>
                                                                 @if ($question->type === 'multiple_choice')
                                                                     {{ optional($answer)->option->option_text ?? 'Tidak Dijawab' }}
                                                                 @else
@@ -434,11 +461,9 @@
                                                                 @endif
                                                             </p>
 
-                                                            @if ($question->type === 'essay')
-                                                                <p>
-                                                                    <strong>Feedback:</strong>
-                                                                    {{ optional($answer)->feedback ?? 'Tidak ada feedback' }}
-                                                                </p>
+                                                            @if ($question->type === 'essay' && $similarityScore !== null)
+                                                                <p><strong>Skor Kemiripan:</strong> {{ number_format($similarityScore, 2) }}%</p>
+                                                                <p><strong>Feedback:</strong> {{ $answer->feedback ?? 'Tidak ada feedback' }}</p>
                                                             @endif
                                                         </li>
                             @endforeach
