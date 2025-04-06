@@ -299,16 +299,34 @@
                 @php
                     $totalBenar = 0;
                     $totalSalah = 0;
+                    $essayThreshold = 50; // Ambang batas kemiripan agar dianggap benar
 
-                    // Hitung total benar dan salah terlebih dahulu (loop pertama)
+                    $normalize = function ($text) {
+                        $text = strtolower($text);
+                        $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
+                        $text = preg_replace('/\s+/', ' ', $text);
+                        return trim($text);
+                    };
+
+                    // Hitung total benar dan salah
                     foreach ($questions as $question) {
                         $answer = $question->answers->first();
                         $isCorrect = false;
 
                         if ($question->type === 'multiple_choice' && $answer) {
-                            $isCorrect = $answer->option->is_correct;
-                        } elseif ($question->type === 'essay') {
-                            $isCorrect = strtolower(trim($answer->answer_text)) === strtolower(trim($question->essay_answer));
+                            $isCorrect = optional($answer->option)->is_correct;
+                        } elseif ($question->type === 'essay' && $answer) {
+                            $userAnswer = $normalize($answer->answer_text ?? '');
+                            $correctAnswers = explode("\n", $question->essay_answer ?? '');
+                            $maxMatch = 0;
+
+                            foreach ($correctAnswers as $correct) {
+                                $correctNormalized = $normalize($correct);
+                                similar_text($userAnswer, $correctNormalized, $percent);
+                                $maxMatch = max($maxMatch, $percent);
+                            }
+
+                            $isCorrect = $maxMatch >= $essayThreshold;
                         }
 
                         if ($isCorrect) {
@@ -318,6 +336,7 @@
                         }
                     }
                 @endphp
+
                 <div class="content">
                     <p style="font-size: 24px; font-weight: 500; color: #34364A;">Assessment Result</p>
                     <div class="mt-4">
@@ -347,13 +366,26 @@
                                                         @php
                                                             $answer = $question->answers->first();
                                                             $isCorrect = false;
+                                                            $similarityScore = null;
 
                                                             if ($question->type === 'multiple_choice' && $answer) {
-                                                                $isCorrect = $answer->option->is_correct;
-                                                            } elseif ($question->type === 'essay') {
-                                                                $isCorrect = strtolower(trim($answer->answer_text)) === strtolower(trim($question->essay_answer));
+                                                                $isCorrect = optional($answer->option)->is_correct;
+                                                            } elseif ($question->type === 'essay' && $answer) {
+                                                                $userAnswer = $normalize($answer->answer_text ?? '');
+                                                                $correctAnswers = explode("\n", $question->essay_answer ?? '');
+                                                                $maxMatch = 0;
+
+                                                                foreach ($correctAnswers as $correct) {
+                                                                    $correctNormalized = $normalize($correct);
+                                                                    similar_text($userAnswer, $correctNormalized, $percent);
+                                                                    $maxMatch = max($maxMatch, $percent);
+                                                                }
+
+                                                                $similarityScore = $maxMatch;
+                                                                $isCorrect = $maxMatch >= $essayThreshold;
                                                             }
                                                         @endphp
+
                                                         <li class="list-group-item d-flex flex-column">
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <strong>{{ $index + 1 }}. {{ $question->question_text }}</strong>
@@ -365,7 +397,7 @@
                                                             </div>
 
                                                             <p class="mt-2">
-                                                                <strong>Jawaban Anda:</strong>
+                                                                <strong>Jawaban Siswa:</strong>
                                                                 @if ($question->type === 'multiple_choice')
                                                                     {{ optional($answer)->option->option_text ?? 'Tidak Dijawab' }}
                                                                 @else
@@ -373,49 +405,13 @@
                                                                 @endif
                                                             </p>
 
-                                                            @if ($question->type === 'essay')
-                                                                <p>
-                                                                    <strong>Feedback:</strong>
-                                                                    {{ optional($answer)->feedback ?? 'Tidak ada feedback' }}
-                                                                </p>
+                                                            @if ($question->type === 'essay' && $similarityScore !== null)
+                                                                <p><strong>Skor Kemiripan:</strong> {{ number_format($similarityScore, 2) }}%</p>
+                                                                <p><strong>Feedback:</strong> {{ $answer->feedback ?? 'Tidak ada feedback' }}</p>
                                                             @endif
                                                         </li>
                             @endforeach
                         </ul>
-                    </div>
-                </div>
-
-                <div id="settings" class="content" style="display: none;">
-                    <h1>Settings</h1>
-                    <p>Possible account settings
-                        needed<br>during the learning process</p>
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/profile.png" alt="Image 1" class="circle-image">
-                                    <h2 class="custom-title">My Profile</h2>
-                                    <p class="custom-subtitle">Ubah data diri kamu</p>
-                                    {{-- <button type="button" class="btn btn-primary custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </button> --}}
-                                    <div class="custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/my-password.png" alt="Image 2" class="circle-image">
-                                    <h2 class="custom-title">My Password</h2>
-                                    <p class="custom-subtitle">Ganti kata sandimu</p>
-                                    <div class="custom-button">
-                                        <p class="button-text">Change Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </main>
