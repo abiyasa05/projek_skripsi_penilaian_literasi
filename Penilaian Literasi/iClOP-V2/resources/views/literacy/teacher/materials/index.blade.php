@@ -349,7 +349,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Judul</th>
-                                        <th>Deskripsi</th>
+                                        <th>File</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -358,7 +358,16 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $material->title }}</td>
-                                            <td>{{ $material->description ?? '-' }}</td>
+                                            <td>
+                                                @if ($material->file_path)
+                                                    <a href="{{ route('literacy_materials_show', $material->id) }}" 
+                                                        class="btn btn-sm btn-primary" target="_blank">
+                                                        Lihat Materi
+                                                    </a>
+                                                @else
+                                                    Tidak ada materi
+                                                @endif
+                                            </td>
                                             <td>
                                                 <button class="btn btn-sm btn-info text-white" data-toggle="modal"
                                                     data-target="#detailMateriModal{{ $material->id }}">Detail</button>

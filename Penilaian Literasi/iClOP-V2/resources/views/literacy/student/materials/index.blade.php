@@ -305,7 +305,6 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Judul</th>
-                                        <th>Deskripsi</th>
                                         <th>File</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -315,7 +314,6 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $material_student->title }}</td>
-                                            <td>{{ $material_student->description ?? '-' }}</td>
                                             <td>
                                                 @if ($material_student->file_path)
                                                     <a href="{{ route('literacy_materials_view', $material_student->id) }}" 

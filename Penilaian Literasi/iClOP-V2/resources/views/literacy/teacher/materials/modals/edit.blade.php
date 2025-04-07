@@ -12,8 +12,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="title" class="form-label">Judul</label>
-                        <input type="text" class="form-control" name="title" value="{{ $material->title }}" required>
-                    </div>
+                        <textarea name="title" class="form-control overflow-auto" rows="2">{{ $material->title }}</textarea>
+                    </div>                    
                     <div class="mb-3">
                         <label for="description" class="form-label">Deskripsi</label>
                         <textarea name="description" class="form-control">{{ $material->description }}</textarea>
