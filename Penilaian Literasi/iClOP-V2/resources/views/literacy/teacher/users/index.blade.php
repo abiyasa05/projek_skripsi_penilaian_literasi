@@ -336,9 +336,6 @@
                 <div class="content">
                     <p style="font-size: 24px; font-weight: 500; color: #34364A;">Manage Users</p>
                     <div class="container mt-4">
-                        <h3>Manage Users</h3>
-                        <p>This is the content for the Manage Users of Literacy.</p>
-
                         <button class="btn btn-dark mb-3" data-toggle="modal" data-target="#modalTambahUser">
                             + Tambah User
                         </button>
@@ -615,20 +612,20 @@
                 "paging": true,
                 "ordering": true,
                 "info": true,
-                dom: 'Bfrtip', // Needs to include 'B' for buttons
-                buttons: [
-                    {
-                        extend: 'excelHtml5',
-                        text: 'Export to Excel',
-                        title: 'Data Export REACT',
-                        filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
-                        customize: function (xlsx) {
-                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            // Customizations go here
-                        }
-                    },
-                    'pdf',
-                ]
+                // dom: 'Bfrtip', // Needs to include 'B' for buttons
+                // buttons: [
+                //     {
+                //         extend: 'excelHtml5',
+                //         //text: 'Export to Excel',
+                //         title: 'Data Export REACT',
+                //         filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
+                //         customize: function (xlsx) {
+                //             var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                //             // Customizations go here
+                //         }
+                //     },
+                //     'pdf',
+                // ]
             });
             $('#studentSubmissionTable').DataTable({
                 // Configuration options

@@ -184,7 +184,7 @@
     <link rel="icon" href="./images/logo.png" type="image/png">
 </head>
 
-<body>
+<body style="padding-bottom: 45px">
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
         <div class="container-fluid">
@@ -419,55 +419,106 @@
                         <!-- List Jawaban -->
                         <ul class="list-group mt-4">
                             @foreach ($questions as $index => $question)
-                                                        @php
-                                                            $answer = $question->answers->first();
-                                                            $isCorrect = false;
-                                                            $similarityScore = null;
-
-                                                            if ($question->type === 'multiple_choice' && $answer) {
-                                                                $isCorrect = optional($answer->option)->is_correct;
-                                                            } elseif ($question->type === 'essay' && $answer) {
-                                                                $userAnswer = $normalize($answer->answer_text ?? '');
-                                                                $correctAnswers = explode("\n", $question->essay_answer ?? '');
-                                                                $maxMatch = 0;
-
-                                                                foreach ($correctAnswers as $correct) {
-                                                                    $correctNormalized = $normalize($correct);
-                                                                    similar_text($userAnswer, $correctNormalized, $percent);
-                                                                    $maxMatch = max($maxMatch, $percent);
-                                                                }
-
-                                                                $similarityScore = $maxMatch;
-                                                                $isCorrect = $maxMatch >= $essayThreshold;
-                                                            }
-                                                        @endphp
-
-                                                        <li class="list-group-item d-flex flex-column">
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <strong>{{ $index + 1 }}. {{ $question->question_text }}</strong>
-                                                                @if ($isCorrect)
-                                                                    <span class="badge bg-success px-3 py-2">Benar ✅</span>
-                                                                @else
-                                                                    <span class="badge bg-danger px-3 py-2">Salah ❌</span>
-                                                                @endif
-                                                            </div>
-
-                                                            <p class="mt-2">
-                                                                <strong>Jawaban Siswa:</strong>
-                                                                @if ($question->type === 'multiple_choice')
-                                                                    {{ optional($answer)->option->option_text ?? 'Tidak Dijawab' }}
-                                                                @else
-                                                                    {{ optional($answer)->answer_text ?? 'Tidak Dijawab' }}
-                                                                @endif
-                                                            </p>
-
-                                                            @if ($question->type === 'essay' && $similarityScore !== null)
-                                                                <p><strong>Skor Kemiripan:</strong> {{ number_format($similarityScore, 2) }}%</p>
-                                                                <p><strong>Feedback:</strong> {{ $answer->feedback ?? 'Tidak ada feedback' }}</p>
-                                                            @endif
-                                                        </li>
+                                @php
+                                    $answer = $question->answers->first();
+                                    $isCorrect = false;
+                                    $similarityScore = null;
+                        
+                                    $questionText = $question->question_text;
+                                    $kutipan = null;
+                                    $pertanyaanBersih = $questionText;
+                        
+                                    if (Str::contains($questionText, 'Bacalah kutipan berikut:') || Str::contains($questionText, 'Bacalah paragraf berikut:')) {
+                                        preg_match('/Bacalah (kutipan|paragraf) berikut:\s*"(.*?)"\s*(.*)/s', $questionText, $matches);
+                                        if (count($matches) >= 4) {
+                                            $kutipan = trim($matches[2]);
+                                            $pertanyaanBersih = trim($matches[3]);
+                                        }
+                                    }
+                        
+                                    // Deteksi soal urutan (misal dari kata "Manakah urutan kalimat" atau pakai $question->type === 'ordering')
+                                    $isOrdering = Str::contains($questionText, 'urutan kalimat');
+                        
+                                    // Penilaian
+                                    if ($question->type === 'multiple_choice' && $answer) {
+                                        $isCorrect = optional($answer->option)->is_correct;
+                                    } elseif ($question->type === 'essay' && $answer) {
+                                        $userAnswer = $normalize($answer->answer_text ?? '');
+                                        $correctAnswers = explode("\n", $question->essay_answer ?? '');
+                                        $maxMatch = 0;
+                        
+                                        foreach ($correctAnswers as $correct) {
+                                            $correctNormalized = $normalize($correct);
+                                            similar_text($userAnswer, $correctNormalized, $percent);
+                                            $maxMatch = max($maxMatch, $percent);
+                                        }
+                        
+                                        $similarityScore = $maxMatch;
+                                        $isCorrect = $maxMatch >= $essayThreshold;
+                                    }
+                        
+                                    // Pilihan kalimat untuk soal urutan
+                                    $choices = $question->choices ? explode("\n", $question->choices) : [];
+                                @endphp
+                        
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <!-- Nomor Soal -->
+                                    <div class="col-auto d-flex justify-content-start align-items-start pt-2">
+                                        <strong>{{ $index + 1 }}.</strong>
+                                    </div>
+                            
+                                    <!-- Isi Soal dan Jawaban -->
+                                    <div class="col">
+                                        {{-- Tampilkan kutipan atau paragraf jika ada --}}
+                                        @if ($kutipan)
+                                            <p class="pt-2"><strong>Bacalah kutipan berikut:</strong></p>
+                                            <div class="ps-3 pe-3"><em>"{{ $kutipan }}"</em></div>
+                                        @endif
+                            
+                                        {{-- Pertanyaan --}}
+                                        <p class="mt-2">{{ $pertanyaanBersih }}</p>
+                            
+                                        {{-- Tampilan pilihan jika soal urutan --}}
+                                        @if ($isOrdering && count($choices) > 0)
+                                            <div class="ps-3">
+                                                @foreach ($choices as $i => $kalimat)
+                                                    <div>{{ $i + 1 }}. {{ $kalimat }}</div>
+                                                @endforeach
+                                            </div>
+                                        @elseif (count($choices) > 0)
+                                            <div class="ps-3">
+                                                @foreach ($choices as $i => $opsi)
+                                                    <div>{{ chr(65 + $i) }}. {{ $opsi }}</div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                            
+                                        {{-- Jawaban siswa --}}
+                                        <p class="mt-3">
+                                            <strong>Jawaban Siswa:</strong>
+                                            {{ $question->type === 'multiple_choice'
+                                                ? optional($answer)->option->option_text ?? 'Tidak Dijawab'
+                                                : optional($answer)->answer_text ?? 'Tidak Dijawab' }}
+                                        </p>
+                            
+                                        {{-- Skor dan feedback (untuk essay) --}}
+                                        @if ($question->type === 'essay' && $similarityScore !== null)
+                                            <p><strong>Skor Kemiripan:</strong> {{ number_format($similarityScore, 2) }}%</p>
+                                            <p><strong>Feedback:</strong> {{ $answer->feedback ?? 'Tidak ada feedback' }}</p>
+                                        @endif
+                                    </div>
+                            
+                                    <!-- Status benar/salah -->
+                                    <div class="col-auto d-flex align-items-start pt-2">
+                                        <span class="badge {{ $isCorrect ? 'bg-success' : 'bg-danger' }} px-3 py-2">
+                                            {{ $isCorrect ? 'Benar ✅' : 'Salah ❌' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>                        
                             @endforeach
-                        </ul>
+                        </ul>                                                                                                
                     </div>
                 </div>
             </main>

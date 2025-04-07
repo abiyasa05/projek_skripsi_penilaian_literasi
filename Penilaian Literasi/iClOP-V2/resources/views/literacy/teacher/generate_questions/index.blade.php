@@ -184,7 +184,7 @@
     <link rel="icon" href="./images/logo.png" type="image/png">
 </head>
 
-<body>
+<body style="padding-bottom: 45px;">
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
         <div class="container-fluid">
@@ -372,7 +372,6 @@
                             <div id="multipleChoiceOptions" class="mb-3">
                                 <label class="form-label">Opsi Jawaban</label>
                                 <div id="answerOptions"></div>
-                                <button type="button" class="btn btn-success btn-sm mt-2" id="addOption">+ Tambah Opsi</button>
                             </div>
                 
                             <!-- Skor untuk pertanyaan Isian -->
@@ -389,42 +388,11 @@
                                     placeholder="Masukkan jawaban referensi"></textarea>
                             </div>
                 
-                            <button type="submit" class="btn btn-primary" id="saveButton" disabled>Simpan</button>
+                            <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+                                <button type="button" class="btn btn-success btn-sm" id="addOption">+ Tambah Opsi</button>
+                                <button type="submit" class="btn btn-primary" id="saveButton" disabled>Simpan</button>
+                            </div>
                         </form>
-                    </div>
-                </div>             
-
-                <div id="settings" class="content" style="display: none;">
-                    <h1>Settings</h1>
-                    <p>Possible account settings
-                        needed<br>during the learning process</p>
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/profile.png" alt="Image 1" class="circle-image">
-                                    <h2 class="custom-title">My Profile</h2>
-                                    <p class="custom-subtitle">Ubah data diri kamu</p>
-                                    {{-- <button type="button" class="btn btn-primary custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </button> --}}
-                                    <div class="custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/my-password.png" alt="Image 2" class="circle-image">
-                                    <h2 class="custom-title">My Password</h2>
-                                    <p class="custom-subtitle">Ganti kata sandimu</p>
-                                    <div class="custom-button">
-                                        <p class="button-text">Change Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </main>
@@ -542,7 +510,8 @@
                 div.innerHTML = `
                     <input type="text" name="options[${optionsCount}][text]" class="form-control me-2 option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
                     <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 20%;" placeholder="Skor" min="0" max="100" required>
-                    <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="ms-2 correct-answer"> Jawaban Benar
+                    <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="ms-2 correct-answer">
+                    <span class="ms-1">Jawaban Benar</span>
                     <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
                 `;
                 answerOptions.appendChild(div);
