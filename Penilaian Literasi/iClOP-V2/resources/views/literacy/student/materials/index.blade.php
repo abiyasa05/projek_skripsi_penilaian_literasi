@@ -534,20 +534,20 @@
                 "paging": true,
                 "ordering": true,
                 "info": true,
-                dom: 'Bfrtip', // Needs to include 'B' for buttons
-                buttons: [
-                    {
-                        extend: 'excelHtml5',
-                        text: 'Export to Excel',
-                        title: 'Data Export REACT',
-                        filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
-                        customize: function (xlsx) {
-                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            // Customizations go here
-                        }
-                    },
-                    'pdf',
-                ]
+                // dom: 'Bfrtip', // Needs to include 'B' for buttons
+                // buttons: [
+                //     {
+                //         extend: 'excelHtml5',
+                //         text: 'Export to Excel',
+                //         title: 'Data Export REACT',
+                //         filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
+                //         customize: function (xlsx) {
+                //             var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                //             // Customizations go here
+                //         }
+                //     },
+                //     'pdf',
+                // ]
             });
             $('#studentSubmissionTable').DataTable({
                 // Configuration options
