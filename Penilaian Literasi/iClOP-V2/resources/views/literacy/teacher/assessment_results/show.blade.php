@@ -418,7 +418,13 @@
 
                         <!-- List Jawaban -->
                         <ul class="list-group mt-4">
-                            @foreach ($questions as $index => $question)
+                            @php
+                                $questionTypeOrder = ['multiple_choice' => 1, 'ordering' => 2, 'essay' => 3];
+                                $sortedQuestions = collect($questions)->sortBy(function ($q) use ($questionTypeOrder) {
+                                    return $questionTypeOrder[$q->type] ?? 999;
+                                })->values();
+                            @endphp
+                            @foreach ($sortedQuestions as $index => $question)
                                 @php
                                     $answer = $question->answers->first();
                                     $isCorrect = false;
