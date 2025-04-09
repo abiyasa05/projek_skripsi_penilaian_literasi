@@ -356,7 +356,7 @@
                                         <textarea name="question_{{ $question->id }}"
                                             class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200"
                                             placeholder="Masukkan jawaban Anda di sini..."
-                                            oninput="saveAnswer('{{ $question->id }}', this.value); updateQuestionUI('essay', '{{ $question->id }}');">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
+                                            oninput="saveEssayAnswerDebounced('{{ $question->id }}', this.value); updateQuestionUI('essay', '{{ $question->id }}');">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
                                     </div>
                                 </div>
                             @endforeach
@@ -537,6 +537,19 @@
                 questionCard.classList.add("border-blue-500");
             }
         }
+    </script>
+    <script>
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+    
+        const saveEssayAnswerDebounced = debounce(function(questionId, value) {
+            saveAnswer(questionId, value);
+        }, 600);
     </script>
 
     <!-- JavaScript untuk mengubah konten tab -->
