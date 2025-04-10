@@ -118,4 +118,17 @@ class LiteracyMaterialController extends Controller
         $material->delete();
         return redirect()->route('literacy_teacher_materials');
     }
+
+    public function show_materials($id)
+    {
+        $material = LiteracyMaterial::findOrFail($id);
+
+        // Pastikan file tersedia
+        if (!$material->file_path || !file_exists(public_path($material->file_path))) {
+            abort(404, 'File tidak ditemukan');
+        }
+
+        // Arahkan ke file langsung agar bisa ditampilkan di browser
+        return response()->file(public_path($material->file_path));
+    }
 }
