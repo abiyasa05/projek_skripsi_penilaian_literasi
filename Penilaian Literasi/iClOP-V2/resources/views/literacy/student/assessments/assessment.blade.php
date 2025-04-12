@@ -296,6 +296,7 @@
     
             <!-- CONTENT DAN NAVIGASI SOAL -->
             @php
+                use Illuminate\Support\Str;
                 $multipleChoiceQuestions = $questions->filter(fn($q) => $q->options->isNotEmpty());
                 $essayQuestions = $questions->filter(fn($q) => $q->options->isEmpty());
                 $multipleChoiceNumber = 0;
@@ -304,30 +305,55 @@
 
             <main class="col-md-8">
                 <div class="grid grid-cols-12 gap-6 p-6">
-                    <div class="col-span-12 lg:col-span-9 space-y-8">
+                    <div class="col-span-12 lg:col-span-9 space-y-4">
                         <!-- Bagian Pilihan Ganda -->
                         @if ($multipleChoiceQuestions->isNotEmpty())
-                            <h4 class="text-base font-semibold mt-6">Bagian 1: Pilihan Ganda</h4>
+                            <h4 class="text-base font-semibold mt-4">Bagian 1: Pilihan Ganda</h4>
                             <p class="text-gray-500 text-sm mb-3">Pilih salah satu jawaban yang paling tepat.</p>
 
                             @foreach ($multipleChoiceQuestions as $question)
                                 @php 
                                     $multipleChoiceNumber++; 
                                     $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
+                                    $kutipan = null;
+                                    $pertanyaanBersih = $question->question_text;
+
+                                    // Deteksi apakah soal memuat kutipan atau paragraf
+                                    if (Str::contains($question->question_text, 'Bacalah')) {
+                                        preg_match('/Bacalah (kutipan|paragraf) berikut:\s*"(.*?)"\s*(.*)/s', $question->question_text, $matches);
+                                        if (count($matches) >= 4) {
+                                            $kutipan = trim($matches[2]);
+                                            $pertanyaanBersih = trim($matches[3]);
+                                        }
+                                    }
                                 @endphp
+
                                 <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-mc-{{ $multipleChoiceNumber }}">
-                                    <h5 class="text-base font-medium mb-3">
-                                        <span class="whitespace-pre-line">{{ $multipleChoiceNumber }}. {{ $question->question_text }}</span>
-                                    </h5>
+                                    <div class="row">
+                                        <!-- Kolom Nomor Soal -->
+                                        <div class="col-auto d-flex justify-content-start align-items-start pt-2">
+                                            <strong>{{ $multipleChoiceNumber }}.</strong>
+                                        </div>
+                                        <!-- Kolom Isi Soal -->
+                                        <div class="col">
+                                            @if ($kutipan)
+                                                <p class="mb-0 mt-2"><strong>Bacalah kutipan berikut:</strong></p>
+                                                <div class="ps-3 pe-3">
+                                                    <em>"{{ $kutipan }}"</em>
+                                                </div>
+                                            @endif
+                                            <p class="mt-2 mb-0">{{ $pertanyaanBersih }}</p>
+                                        </div>
+                                    </div>
 
                                     <div class="mt-3">
                                         <div class="space-y-3">
                                             @foreach ($question->options as $option)
-                                                <label class="block p-3 border rounded-sm cursor-pointer w-100">
+                                                <label class="d-block p-3 border rounded-sm cursor-pointer w-100">
                                                     <input type="radio" name="question_{{ $question->id }}" 
-                                                    value="{{ $option->id }}" class="form-radio"
-                                                    onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}'); updateQuestionUI('mc', '{{ $question->id }}');"
-                                                    {{ $savedAnswer && $savedAnswer->option_id == $option->id ? 'checked' : '' }}>
+                                                        value="{{ $option->id }}" class="form-radio"
+                                                        onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}'); updateQuestionUI('mc', '{{ $question->id }}');"
+                                                        {{ $savedAnswer && $savedAnswer->option_id == $option->id ? 'checked' : '' }}>
                                                     <span>{{ $option->option_text }}</span>
                                                 </label>
                                             @endforeach
@@ -337,21 +363,44 @@
                             @endforeach
                         @endif
 
-                        <!-- Bagian Isian -->
+                        <!-- Bagian Isian / Essay -->
                         @if ($essayQuestions->isNotEmpty())
-                            <h4 class="text-base font-semibold mt-6">Bagian 2: Isian</h4>
+                            <h4 class="text-base font-semibold mt-4">Bagian 2: Isian</h4>
                             <p class="text-gray-500 text-sm mb-3">Jawablah pertanyaan berikut dengan jawaban yang sesuai.</p>
 
                             @foreach ($essayQuestions as $question)
                                 @php 
                                     $essayNumber++; 
                                     $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
-                                @endphp
-                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-essay-{{ $essayNumber }}">
-                                    <h5 class="text-base font-medium mb-3">
-                                        <span class="whitespace-pre-line">{{ $essayNumber }}. {{ $question->question_text }}</span>
-                                    </h5>
+                                    $kutipan = null;
+                                    $pertanyaanBersih = $question->question_text;
 
+                                    if (Str::contains($question->question_text, 'Bacalah')) {
+                                        preg_match('/Bacalah (kutipan|paragraf) berikut:\s*"(.*?)"\s*(.*)/s', $question->question_text, $matches);
+                                        if (count($matches) >= 4) {
+                                            $kutipan = trim($matches[2]);
+                                            $pertanyaanBersih = trim($matches[3]);
+                                        }
+                                    }
+                                @endphp
+
+                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-essay-{{ $essayNumber }}">
+                                    <div class="row">
+                                        <!-- Kolom Nomor Soal -->
+                                        <div class="col-auto d-flex justify-content-start align-items-start pt-2">
+                                            <strong>{{ $essayNumber }}.</strong>
+                                        </div>
+                                        <!-- Kolom Isi Soal -->
+                                        <div class="col">
+                                            @if ($kutipan)
+                                                <p class="mb-0 mt-2"><strong>Bacalah kutipan berikut:</strong></p>
+                                                <div class="ps-3 pe-3">
+                                                    <em>"{{ $kutipan }}"</em>
+                                                </div>
+                                            @endif
+                                            <p class="mt-2 mb-0">{{ $pertanyaanBersih }}</p>
+                                        </div>
+                                    </div>
                                     <div class="mt-3">
                                         <textarea name="question_{{ $question->id }}"
                                             class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200"
@@ -382,8 +431,10 @@
                                         $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
                                         $btnClass = $savedAnswer && $savedAnswer->option_id ? 'btn-primary border-white' : 'btn-outline-secondary';
                                     @endphp
-                                    <button id="nav-mc-{{ $multipleChoiceNumber }}" 
-                                        class="btn {{ $btnClass }}" 
+                                    <button
+                                        id="nav-mc-{{ $multipleChoiceNumber }}"
+                                        class="btn {{ $btnClass }} d-flex justify-content-center align-items-center"
+                                        style="width: 35px; height: 35px;"
                                         onclick="navigateToQuestion('mc', {{ $multipleChoiceNumber }})"
                                         data-question-id="{{ $question->id }}">
                                         {{ $multipleChoiceNumber }}
@@ -392,6 +443,7 @@
                             @endforeach
                         </div>
                     </div>
+                    <hr>
             
                     <!-- Navigasi Isian -->
                     <div class="mb-3">
@@ -405,8 +457,10 @@
                                         $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
                                         $btnClass = $savedAnswer && $savedAnswer->answer_text ? 'btn-primary border-white' : 'btn-outline-secondary';
                                     @endphp
-                                    <button id="nav-essay-{{ $essayNumber }}" 
-                                        class="btn {{ $btnClass }}" 
+                                    <button
+                                        id="nav-essay-{{ $essayNumber }}"
+                                        class="btn {{ $btnClass }} d-flex justify-content-center align-items-center"
+                                        style="width: 35px; height: 35px;"
                                         onclick="navigateToQuestion('essay', {{ $essayNumber }})"
                                         data-question-id="{{ $question->id }}">
                                         {{ $essayNumber }}
