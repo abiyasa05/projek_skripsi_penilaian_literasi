@@ -12,6 +12,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use function similar_text;
+use Illuminate\Support\Facades\Http;
 
 class LiteracyAssessmentController extends Controller
 {
@@ -175,6 +177,101 @@ class LiteracyAssessmentController extends Controller
         return response()->json(['success' => true]);
     }
 
+    // public function submitAssessment($id)
+    // {
+    //     try {
+    //         $user = Auth::user();
+    //         $assessment = LiteracyAssessment::where('id', $id)
+    //             ->where('user_id', $user->id)
+    //             ->firstOrFail();
+
+    //         if ($assessment->status !== 'in_progress') {
+    //             return response()->json(['error' => 'Asesmen tidak sedang berjalan.'], 400);
+    //         }
+
+    //         $answers = LiteracyAnswer::where('assessment_id', $id)->get();
+
+    //         $correctWeight = 0;
+    //         $totalWeight = 0;
+    //         $essayThreshold = 60;
+
+    //         $normalizeText = function ($text) {
+    //             $text = strtolower($text);
+    //             $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
+    //             $text = preg_replace('/\s+/', ' ', $text);
+    //             return trim($text);
+    //         };
+
+    //         $feedback = [];
+
+    //         foreach ($answers as $answer) {
+    //             $question = LiteracyQuestion::find($answer->question_id);
+    //             if (!$question)
+    //                 continue;
+
+    //             $weight = $question->weight ?? ($question->type === 'essay' ? 5 : 1);
+    //             $totalWeight += $weight;
+
+    //             if ($question->type === 'multiple_choice') {
+    //                 if (
+    //                     $answer->option_id &&
+    //                     LiteracyOption::where('id', $answer->option_id)
+    //                         ->where('is_correct', true)
+    //                         ->exists()
+    //                 ) {
+    //                     $correctWeight += $weight;
+    //                 }
+
+    //             } elseif ($question->type === 'essay') {
+    //                 $userAnswer = $normalizeText($answer->answer_text ?? '');
+    //                 $correctAnswerRaw = $question->essay_answer ?? '';
+    //                 $correctAnswers = array_map($normalizeText, preg_split('/\r\n|\r|\n/', $correctAnswerRaw));
+    //                 $maxMatchPercent = 0;
+
+    //                 foreach ($correctAnswers as $correctAnswer) {
+    //                     similar_text($userAnswer, $correctAnswer, $percent);
+    //                     $maxMatchPercent = max($maxMatchPercent, $percent);
+    //                 }
+
+    //                 if ($maxMatchPercent >= $essayThreshold) {
+    //                     $correctWeight += $weight;
+    //                 }
+    //             }
+    //         }
+
+    //         // Hitung skor akhir berdasarkan bobot
+    //         $score = $totalWeight > 0 ? ($correctWeight / $totalWeight) * 100 : 0;
+
+    //         // Update asesmen yang sedang berjalan jadi completed
+    //         $assessment->update([
+    //             'score' => round($score, 2),
+    //             'status' => 'completed',
+    //             'assessed_at' => now(),
+    //             'feedback' => json_encode($feedback), // Menyimpan feedback ke database
+    //         ]);
+
+    //         // Buat asesmen baru dengan status 'pending' untuk percakapan berikutnya
+    //         LiteracyAssessment::create([
+    //             'user_id' => $user->id,
+    //             'status' => 'pending',
+    //             'score' => null,
+    //             'feedback' => '',
+    //             'assessed_at' => null,
+    //             'created_at' => now(),
+    //             'updated_at' => now(),
+    //         ]);
+
+    //         return response()->json([
+    //             'message' => 'Asesmen berhasil diselesaikan.',
+    //             'score' => round($score, 2),
+    //             'feedback' => $feedback, // Mengembalikan feedback dalam respons
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+    //     }
+    // }
+
     public function submitAssessment($id)
     {
         try {
@@ -189,8 +286,18 @@ class LiteracyAssessmentController extends Controller
 
             $answers = LiteracyAnswer::where('assessment_id', $id)->get();
 
-            $correctWeight = 0; // Total bobot jawaban benar
-            $totalWeight = 0;   // Total bobot semua soal
+            $correctWeight = 0;
+            $totalWeight = 0;
+            $essayThreshold = 60;
+
+            $normalizeText = function ($text) {
+                $text = strtolower($text);
+                $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
+                $text = preg_replace('/\s+/', ' ', $text);
+                return trim($text);
+            };
+
+            $feedback = [];
 
             foreach ($answers as $answer) {
                 $question = LiteracyQuestion::find($answer->question_id);
@@ -198,21 +305,59 @@ class LiteracyAssessmentController extends Controller
                     continue;
 
                 $weight = $question->weight ?? ($question->type === 'essay' ? 5 : 1);
-                $totalWeight += $weight; // Tambah bobot soal ke total
+                $totalWeight += $weight;
 
                 if ($question->type === 'multiple_choice') {
-                    // Cek apakah jawaban pilihan ganda benar
-                    if ($answer->option_id && LiteracyOption::where('id', $answer->option_id)->where('is_correct', true)->exists()) {
+                    if (
+                        $answer->option_id &&
+                        LiteracyOption::where('id', $answer->option_id)
+                            ->where('is_correct', true)
+                            ->exists()
+                    ) {
                         $correctWeight += $weight;
                     }
-                } elseif ($question->type === 'essay') {
-                    // Ambil kunci jawaban esai
-                    $correctAnswer = strtolower(trim($question->essay_answer));
-                    $userAnswer = strtolower(trim($answer->answer_text));
 
-                    // Jika jawaban sama persis, beri skor penuh
-                    if ($userAnswer === $correctAnswer) {
+                } elseif ($question->type === 'essay') {
+                    $userAnswer = $normalizeText($answer->answer_text ?? '');
+                    $correctAnswerRaw = $question->essay_answer ?? '';
+                    $correctAnswers = array_map($normalizeText, preg_split('/\r\n|\r|\n/', $correctAnswerRaw));
+                    $maxMatchPercent = 0;
+                    $bestMatch = '';
+                
+                    foreach ($correctAnswers as $correctAnswer) {
+                        similar_text($userAnswer, $correctAnswer, $percent);
+                        if ($percent > $maxMatchPercent) {
+                            $maxMatchPercent = $percent;
+                            $bestMatch = $correctAnswer;
+                        }
+                    }
+                
+                    if ($maxMatchPercent >= $essayThreshold) {
                         $correctWeight += $weight;
+                    } else {
+                        try {
+                            $apiResponse = Http::timeout(10)->post('http://127.0.0.1:8001/generate-feedback/', [
+                                'user_answer' => $answer->answer_text,
+                                'expected_answer' => $bestMatch,
+                            ]);
+                
+                            if ($apiResponse->ok()) {
+                                $aiFeedback = $apiResponse->json()['feedback'];
+                            } else {
+                                $aiFeedback = 'Feedback tidak tersedia saat ini.';
+                            }
+                        } catch (\Exception $e) {
+                            $aiFeedback = 'Terjadi kesalahan saat menghubungi AI.';
+                        }
+                
+                        // SIMPAN ke kolom feedback
+                        $answer->feedback = $aiFeedback;
+                        $answer->save();
+                
+                        $feedback[] = [
+                            'question_id' => $question->id,
+                            'feedback' => $aiFeedback,
+                        ];
                     }
                 }
             }
@@ -220,14 +365,15 @@ class LiteracyAssessmentController extends Controller
             // Hitung skor akhir berdasarkan bobot
             $score = $totalWeight > 0 ? ($correctWeight / $totalWeight) * 100 : 0;
 
-            // Simpan skor dan ubah status asesmen ke 'completed'
+            // Update asesmen yang sedang berjalan jadi completed
             $assessment->update([
                 'score' => round($score, 2),
                 'status' => 'completed',
                 'assessed_at' => now(),
+                'feedback' => json_encode($feedback),
             ]);
 
-            // Buat asesmen baru untuk percobaan berikutnya
+            // Buat asesmen baru dengan status 'pending' untuk percakapan berikutnya
             LiteracyAssessment::create([
                 'user_id' => $user->id,
                 'status' => 'pending',
@@ -238,7 +384,11 @@ class LiteracyAssessmentController extends Controller
                 'updated_at' => now(),
             ]);
 
-            return response()->json(['message' => 'Asesmen berhasil diselesaikan.', 'score' => round($score, 2)], 200);
+            return response()->json([
+                'message' => 'Asesmen berhasil diselesaikan.',
+                'score' => round($score, 2),
+                'feedback' => $feedback,
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
@@ -253,7 +403,7 @@ class LiteracyAssessmentController extends Controller
             ->where('status', 'completed')
             ->firstOrFail();
 
-        // Ambil semua pertanyaan, beserta jawaban dan opsi untuk asesmen ini
+        // Ambil semua pertanyaan beserta jawaban untuk asesmen ini
         $questions = LiteracyQuestion::with([
             'answers' => function ($query) use ($id) {
                 $query->where('assessment_id', $id);
