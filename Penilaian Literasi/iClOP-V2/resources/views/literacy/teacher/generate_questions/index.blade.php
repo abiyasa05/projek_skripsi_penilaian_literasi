@@ -340,12 +340,15 @@
                 
                         <!-- Form untuk generate question -->
                         <form id="aiForm" class="mt-4">
-                            <div class="mb-3">
-                                <textarea id="content" name="content" class="form-control" rows="3">
-                                </textarea>
+                            <div class="card mt-2">
+                                <div class="card-body">
+                                    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #f8f9fa; max-height: 300px; overflow-y: auto;">
+                                        <pre style="margin: 0;"><code id="content" contenteditable="true" style="white-space: pre-wrap; outline: none;"></code></pre>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mt-3">Generate</button>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Generate</button>
-                        </form>
+                        </form>                        
                 
                         <hr>
                 
@@ -549,7 +552,7 @@
                 }
     
                 saveButton.disabled = !isValid;
-                questionForm.reportValidity();
+                // questionForm.reportValidity();
             }
     
             questionType.addEventListener("change", toggleFields);
@@ -562,7 +565,7 @@
         });
     </script>
 
-    <script>
+    {{-- <script>
         document.getElementById("aiForm").addEventListener("submit", async function (event) {
             event.preventDefault(); // Mencegah refresh halaman
 
@@ -596,7 +599,43 @@
                 console.error("Error:", error);
             }
         });
-    </script>
+    </script> --}}
+    <script>
+        document.getElementById("aiForm").addEventListener("submit", async function (event) {
+            event.preventDefault(); // Mencegah refresh halaman
+    
+            let contentDiv = document.getElementById("content");
+            let content = contentDiv.innerText.trim();
+    
+            if (content === "") {
+                content = "Buatlah soal literasi berdasarkan teks anak-anak tentang lingkungan.";
+            }
+    
+            contentDiv.innerText = "Menghasilkan pertanyaan...";
+    
+            try {
+                let response = await fetch("http://127.0.0.1:8000/literacy/teacher/generate_questions/ai", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ content }) // << INI PENTING BANGET!
+                });
+    
+                let data = await response.json();
+    
+                if (response.ok) {
+                    contentDiv.innerText = data.generated_questions || "Soal berhasil dibuat, tapi tidak ada data.";
+                } else {
+                    contentDiv.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
+                }
+    
+            } catch (error) {
+                contentDiv.innerText = "Gagal menghubungi server!";
+                console.error("Error:", error);
+            }
+        });
+    </script>    
     <!-- JavaScript untuk mengubah konten tab -->
     <script>
         function materialModal(id, title, controller) {
