@@ -337,9 +337,6 @@
                 <div class="content">
                     <p style="font-size: 24px; font-weight: 500; color: #34364A;">Manage Questions</p>
                     <div class="container mt-4">
-                        <h3>Manage Questions</h3>
-                        <p>This is the content for managing assessment questions.</p>
-
                         <div class="d-flex gap-2 mb-3">
                             <button class="btn btn-dark" data-toggle="modal" data-target="#modalTambahPertanyaan">
                                 + Tambah Soal
@@ -402,40 +399,6 @@
                                 @include('literacy.teacher.questions.modals.edit', ['question' => $question])
                                 @include('literacy.teacher.questions.modals.delete', ['question' => $question])
                             @endforeach
-                        </div>
-                    </div>
-                </div>
-
-                <div id="settings" class="content" style="display: none;">
-                    <h1>Settings</h1>
-                    <p>Possible account settings
-                        needed<br>during the learning process</p>
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/profile.png" alt="Image 1" class="circle-image">
-                                    <h2 class="custom-title">My Profile</h2>
-                                    <p class="custom-subtitle">Ubah data diri kamu</p>
-                                    {{-- <button type="button" class="btn btn-primary custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </button> --}}
-                                    <div class="custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/my-password.png" alt="Image 2" class="circle-image">
-                                    <h2 class="custom-title">My Password</h2>
-                                    <p class="custom-subtitle">Ganti kata sandimu</p>
-                                    <div class="custom-button">
-                                        <p class="button-text">Change Now</p>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -683,20 +646,20 @@
                 "paging": true,
                 "ordering": true,
                 "info": true,
-                dom: 'Bfrtip', // Needs to include 'B' for buttons
-                buttons: [
-                    {
-                        extend: 'excelHtml5',
-                        text: 'Export to Excel',
-                        title: 'Data Export REACT',
-                        filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
-                        customize: function (xlsx) {
-                            var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                            // Customizations go here
-                        }
-                    },
-                    'pdf',
-                ]
+                // dom: 'Bfrtip', // Needs to include 'B' for buttons
+                // buttons: [
+                //     {
+                //         extend: 'excelHtml5',
+                //         text: 'Export to Excel',
+                //         title: 'Data Export REACT',
+                //         filename: 'react_data_export_topic_finished_student_' + new Date().toLocaleDateString() + '_' + new Date().toLocaleTimeString(),
+                //         customize: function (xlsx) {
+                //             var sheet = xlsx.xl.worksheets['sheet1.xml'];
+                //             // Customizations go here
+                //         }
+                //     },
+                //     'pdf',
+                // ]
             });
             $('#studentSubmissionTable').DataTable({
                 // Configuration options

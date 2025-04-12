@@ -8,13 +8,11 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Materi:</label>
-                    <div class="form-control bg-light">{{ $question->material->title }}</div>
+                    <label class="form-label">Pertanyaan:</label>
+                    <textarea class="form-control bg-light" readonly
+                        style="height: 150px !important; overflow-y: auto !important; resize: none !important;">{{ $question->question_text }}</textarea>
+                    </textarea>
                 </div>
-                <textarea class="form-control bg-light" readonly
-                    style="height: 150px !important; overflow-y: auto !important; resize: none !important;">
-                    {{ $question->question_text }}
-                </textarea>
                 <div class="mb-3">
                     <label class="form-label">Tipe Pertanyaan:</label>
                     <div class="form-control bg-light">

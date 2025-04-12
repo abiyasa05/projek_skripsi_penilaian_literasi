@@ -9,16 +9,16 @@
             <form action="{{ route('literacy_questions_store') }}" method="POST" id="questionForm">
                 @csrf
                 <div class="modal-body">
-                    <!-- Pilihan Materi -->
+                    {{-- <!-- Pilihan Materi -->
                     <div class="mb-3">
                         <label for="material_id" class="form-label">Materi</label>
                         <select name="material_id" class="form-control" required>
                             <option value="">Pilih Materi</option>
                             @foreach ($materials as $material)
-                                <option value="{{ $material->id }}">{{ $material->title }}</option>
+                            <option value="{{ $material->id }}">{{ $material->title }}</option>
                             @endforeach
                         </select>
-                    </div>
+                    </div> --}}
 
                     <!-- Teks Pertanyaan -->
                     <div class="mb-3">
@@ -114,13 +114,19 @@
         function addNewOption() {
             let optionsCount = document.querySelectorAll(".option-group").length; // Hitung ulang indeks
             let div = document.createElement("div");
-            div.classList.add("option-group", "mb-2", "d-flex", "align-items-center");
+            div.classList.add("option-group", "mb-2", "d-flex", "align-items-center", "gap-2"); // Tambahkan gap agar lebih rapi
             div.innerHTML = `
-                <input type="text" name="options[${optionsCount}][text]" class="form-control me-2 option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
-                <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 20%;" placeholder="Skor" min="0" max="100" required>
-                <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="ms-2 correct-answer"> Jawaban Benar
-                <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
-            `;
+        <input type="text" name="options[${optionsCount}][text]" class="form-control me-2 option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
+        <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 20%;" placeholder="Skor" min="0" max="100" required>
+
+        <!-- Tambahkan margin kiri pada label -->
+        <label class="d-flex align-items-center ms-2">
+            <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="correct-answer me-1">
+            <span>Benar</span>
+        </label>
+
+        <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
+    `;
             answerOptions.appendChild(div);
 
             // Tambahkan event listener untuk tombol hapus opsi
