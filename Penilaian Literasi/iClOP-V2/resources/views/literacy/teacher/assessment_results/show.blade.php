@@ -200,10 +200,7 @@
                     <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard
-                                Student</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Learning</a>
+                                Teacher</a>
                         </li>
                     </ul>
                 </div>
