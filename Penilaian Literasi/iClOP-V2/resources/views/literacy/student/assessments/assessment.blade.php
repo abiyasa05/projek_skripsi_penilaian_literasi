@@ -203,9 +203,6 @@
                             <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard
                                 Student</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Learning</a>
-                        </li>
                     </ul>
                 </div>
                 <div class="dropdown">
