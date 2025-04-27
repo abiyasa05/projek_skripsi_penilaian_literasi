@@ -4,6 +4,8 @@ use App\Http\Controllers\Literacy\LiteracyController;
 use App\Http\Controllers\Literacy\LiteracyGuruController;
 use App\Http\Controllers\Literacy\Student\LiteracyLogicalController;
 use App\Http\Controllers\Literacy\LiteracyMaterialController;
+use App\Http\Controllers\Literacy\LiteracyMaterialStudentController;
+use App\Http\Controllers\Literacy\LiteracyTeacherAssessmentController;
 use App\Http\Controllers\Literacy\LiteracyUserController;
 use App\Http\Controllers\Literacy\LiteracyAssessmentController;
 use App\Http\Controllers\Literacy\LiteracyQuestionController;
@@ -32,6 +34,18 @@ Route::group(['middleware' => ['auth', 'student']], function () {
         Route::post('/start/{id}', [LiteracyAssessmentController::class, 'start'])->name('literacy_assessments_start');
         Route::get('/continue/{id}', [LiteracyAssessmentController::class, 'continue'])->name('literacy_assessments_continue');
         Route::post('/assessments/{assessmentId}/save-answer', [LiteracyAssessmentController::class, 'storeAnswer'])->name('literacy_assessment_store_answer');
+        Route::post('/assessment/submit/{id}', [LiteracyAssessmentController::class, 'submitAssessment'])->name('assessment.submit');
+
+        // Melihat hasil asesmen setelah selesai
+        Route::get('/assessments/{id}/result', [LiteracyAssessmentController::class, 'viewResult'])->name('literacy_assessment_result');
+
+        // Menampilkan daftar soal dalam asesmen tertentu
+        Route::get('/assessments/{id}/questions', [LiteracyAssessmentController::class, 'getQuestions'])->name('literacy_assessment_questions');
+
+        // Menampilkan materi literasi yang tersedia untuk siswa
+        Route::get('/materials/view/{id}', [LiteracyMaterialStudentController::class, 'view_materials'])->name('literacy_materials_view');
+        Route::get('/materials/all', [LiteracyMaterialStudentController::class, 'show_materials'])->name('literacy_student_materials');
+        Route::get('/materials/show/{id}', [LiteracyMaterialStudentController::class, 'show'])->name('literacy_materials_show');
     });
 });
 
@@ -41,6 +55,8 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
         Route::get('/materials', [LiteracyMaterialController::class, 'materials'])->name('literacy_teacher_materials');
 
         Route::get('/materials/{id}/detail', [LiteracyMaterialController::class, 'show'])->name('literacy_materials_detail');
+
+        Route::get('/materials/show/{id}', [LiteracyMaterialController::class, 'show_materials'])->name('literacy_materials_show');
 
         Route::get('/materials/create', [LiteracyMaterialController::class, 'create'])
             ->name('literacy_materials_create');
@@ -103,8 +119,13 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
         Route::post('/generate_questions/ai', [LiteracyGenerateQuestionsController::class, 'generate_from_ai'])
             ->name('literacy_teacher_generate_from_ai');
 
-        Route::get('/topics', [LiteracyGuruController::class, 'topics'])->name('literacy_teacher_topics');
-        Route::get('/topics/add/{id}', [LiteracyGuruController::class, 'add_topics'])->name('literacy_teacher_add_topics');
-        Route::post('/topics/simpan', [LiteracyGuruController::class, 'simpan'])->name('literacy_teacher_simpan');
+        Route::get('/assessment_results', [LiteracyTeacherAssessmentController::class, 'index'])
+            ->name('literacy_teacher_assessment_results');
+
+        Route::get('/assessment_results/{id}', [LiteracyTeacherAssessmentController::class, 'show'])
+            ->name('literacy_teacher_assessment_results_show');
+
+        Route::get('/assessment_results/view/{id}', [LiteracyTeacherAssessmentController::class, 'viewResult'])
+            ->name('literacy_teacher_assessment_results_view');
     });
 });
