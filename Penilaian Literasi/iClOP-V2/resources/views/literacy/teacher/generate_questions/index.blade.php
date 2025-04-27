@@ -304,7 +304,8 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}"
+                                        style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
@@ -339,26 +340,36 @@
                         <form id="aiForm" class="mt-4">
                             <div class="card mt-2">
                                 <div class="card-body">
-                                    <div style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #f8f9fa; max-height: 300px; overflow-y: auto;">
-                                        <pre style="margin: 0;"><code id="content" contenteditable="true" style="white-space: pre-wrap; outline: none;"></code></pre>
+                                    <div
+                                        style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #f8f9fa; max-height: 300px; overflow-y: auto;">
+                                        <pre style="margin: 0;">
+                                            <code id="content" contenteditable="true" style="white-space: pre-wrap; outline: none;">
+                                                {{ $latestGeneratedText->generate_text ?? '' }}
+                                            </code>
+                                        </pre>
                                     </div>
-                                    <button type="submit" class="btn btn-primary mt-3">Generate</button>
+                                    <div class="mt-3">
+                                        <button type="submit" class="btn btn-primary">Generate</button>
+                                        <button type="button" class="btn btn-secondary" id="resetButton">Reset</button>
+                                    </div>
                                 </div>
                             </div>
-                        </form>                        
-                
+                        </form>
+
                         <hr>
-                
+
                         <!-- Form untuk menyimpan pertanyaan -->
-                        <form action="{{ route('literacy_questions_store') }}" method="POST" id="questionForm" class="mt-4">
+                        <form action="{{ route('literacy_questions_store') }}" method="POST" id="questionForm"
+                            class="mt-4">
                             @csrf
-                
+
                             <!-- Teks Pertanyaan -->
                             <div class="mb-3">
                                 <label for="question_text" class="form-label">Teks Pertanyaan</label>
-                                <textarea name="question_text" id="question_text" class="form-control" required></textarea>
+                                <textarea name="question_text" id="question_text" class="form-control"
+                                    required></textarea>
                             </div>
-                
+
                             <!-- Tipe Pertanyaan -->
                             <div class="mb-3">
                                 <label for="type" class="form-label">Tipe Pertanyaan</label>
@@ -367,29 +378,30 @@
                                     <option value="essay">Isian</option>
                                 </select>
                             </div>
-                
+
                             <!-- Opsi Jawaban (Untuk Pilihan Ganda) -->
                             <div id="multipleChoiceOptions" class="mb-3">
                                 <label class="form-label">Opsi Jawaban</label>
                                 <div id="answerOptions"></div>
                             </div>
-                
+
                             <!-- Skor untuk pertanyaan Isian -->
                             <div id="essayScoreField" class="mb-3">
                                 <label for="essay_score" class="form-label">Skor untuk Isian</label>
-                                <input type="number" name="essay_score" id="essay_score" class="form-control" min="0" max="100"
-                                    placeholder="Masukkan skor">
+                                <input type="number" name="essay_score" id="essay_score" class="form-control" min="0"
+                                    max="100" placeholder="Masukkan skor">
                             </div>
-                
+
                             <!-- Jawaban untuk Isian -->
                             <div id="essayReferenceAnswerField" class="mb-3">
                                 <label for="essay_answer" class="form-label">Jawaban Isian</label>
                                 <textarea name="essay_answer" id="essay_answer" class="form-control"
                                     placeholder="Masukkan jawaban referensi"></textarea>
                             </div>
-                
+
                             <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
-                                <button type="button" class="btn btn-success btn-sm" id="addOption">+ Tambah Opsi</button>
+                                <button type="button" class="btn btn-success btn-sm" id="addOption">+ Tambah
+                                    Opsi</button>
                                 <button type="submit" class="btn btn-primary" id="saveButton" disabled>Simpan</button>
                             </div>
                         </form>
@@ -399,63 +411,55 @@
         </div>
     </div>
 
-    <!-- The Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document" style="max-width: 80%;" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel"><span id="span_title"></span></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" style="margin-left: 10px; width: 160px;"
-                        onclick="materialDetailPage()">
-                        <i class="fas fa-key" style="margin-right: 5px;"></i>Enroll Material
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const aiForm = document.getElementById('aiForm');
+            const contentElement = document.getElementById('content');
+            const resetButton = document.getElementById('resetButton');
+            const generateButton = aiForm.querySelector('button[type="submit"]'); // Get the Generate button
 
-    {{-- <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const aiForm = document.getElementById("aiForm");
-            const questionText = document.getElementById("question_text");
-            const saveButton = document.getElementById("saveButton");
-    
-            aiForm.addEventListener("submit", function (event) {
-                event.preventDefault();
-                const content = document.getElementById("content").value;
+            // Function to send the content to the server and get generated questions
+            aiForm.addEventListener('submit', async function (event) {
+                event.preventDefault();  // Prevent the form from submitting normally
 
-    
-                fetch("http://127.0.0.1:8001/generate/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ content: content })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.generated_questions) {
-                        questionText.value = data.generated_questions;
-                        saveButton.disabled = false;
+                let content = contentElement.innerText.trim();  // Get the content entered by the user
+
+                if (content === "") {
+                    content = "Buatlah soal literasi berdasarkan teks anak-anak tentang lingkungan.";
+                }
+
+                contentElement.innerText = "Menghasilkan pertanyaan..."; // Display "Menghasilkan pertanyaan..."
+
+                try {
+                    let response = await fetch("{{ route('literacy_teacher_generate_from_ai') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ content: content })
+                    });
+
+                    let data = await response.json();
+
+                    if (response.ok) {
+                        contentElement.innerText = data.generated_questions || "Soal berhasil dibuat, tapi tidak ada data.";
                     } else {
-                        alert("Gagal menghasilkan pertanyaan.");
+                        contentElement.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
                     }
-                })
-                .catch(error => console.error("Error:", error));
+
+                } catch (error) {
+                    contentElement.innerText = "Gagal menghubungi server!";
+                    console.error("Error:", error);
+                }
             });
-    
-            // Aktifkan tombol simpan jika ada teks pertanyaan
-            questionText.addEventListener("input", function () {
-                saveButton.disabled = questionText.value.trim() === "";
+
+            // Reset the content editable area when reset button is clicked
+            resetButton.addEventListener('click', function () {
+                contentElement.innerText = '';  // Clear the content
             });
         });
-    </script> --}}
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -469,20 +473,20 @@
             const essayScore = document.getElementById("essay_score");
             const essayAnswer = document.getElementById("essay_answer");
             const questionForm = document.getElementById("questionForm");
-    
+
             function toggleFields() {
                 if (questionType.value === "multiple_choice") {
                     multipleChoiceOptions.style.display = "block";
                     essayScoreField.style.display = "none";
                     essayReferenceAnswerField.style.display = "none";
-    
+
                     essayScore.removeAttribute("required");
                     essayAnswer.removeAttribute("required");
-    
+
                     document.querySelectorAll(".option-text, .option-score").forEach(input => {
                         input.setAttribute("required", "required");
                     });
-    
+
                     // Tambahkan minimal 1 opsi jika belum ada
                     if (answerOptions.children.length === 0) {
                         addNewOption();
@@ -491,18 +495,18 @@
                     multipleChoiceOptions.style.display = "none";
                     essayScoreField.style.display = "block";
                     essayReferenceAnswerField.style.display = "block";
-    
+
                     essayScore.setAttribute("required", "required");
                     essayAnswer.setAttribute("required", "required");
-    
+
                     document.querySelectorAll(".option-text, .option-score").forEach(input => {
                         input.removeAttribute("required");
                     });
                 }
-    
+
                 validateForm();
             }
-    
+
             function addNewOption() {
                 let optionsCount = document.querySelectorAll(".option-group").length;
                 let div = document.createElement("div");
@@ -515,17 +519,17 @@
                     <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
                 `;
                 answerOptions.appendChild(div);
-    
+
                 div.querySelector(".remove-option").addEventListener("click", function () {
                     div.remove();
                     updateOptionIndexes();
                     validateForm();
                 });
-    
+
                 updateOptionIndexes();
                 validateForm();
             }
-    
+
             function updateOptionIndexes() {
                 document.querySelectorAll(".option-group").forEach((option, index) => {
                     option.querySelector(".option-text").name = `options[${index}][text]`;
@@ -534,105 +538,34 @@
                     option.querySelector(".option-text").placeholder = `Opsi ${index + 1}`;
                 });
             }
-    
+
             function validateForm() {
                 let isValid = false;
-    
+
                 if (questionType.value === "multiple_choice") {
                     let options = document.querySelectorAll(".option-text");
                     let scores = document.querySelectorAll(".option-score");
                     let checkedCorrect = document.querySelector(".correct-answer:checked");
-    
+
                     isValid = options.length > 0 && scores.length > 0 && checkedCorrect;
                 } else {
                     isValid = essayScore.value.trim() !== "" && essayAnswer.value.trim() !== "";
                 }
-    
+
                 saveButton.disabled = !isValid;
                 // questionForm.reportValidity();
             }
-    
+
             questionType.addEventListener("change", toggleFields);
             addOptionBtn.addEventListener("click", addNewOption);
             essayScore.addEventListener("input", validateForm);
             essayAnswer.addEventListener("input", validateForm);
             answerOptions.addEventListener("input", validateForm);
-    
+
             toggleFields();
         });
     </script>
 
-    {{-- <script>
-        document.getElementById("aiForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Mencegah refresh halaman
-
-            let contentTextarea = document.getElementById("content");
-            let content = contentTextarea.value.trim();
-
-            if (content === "") {
-                content = "Buatlah soal literasi berdasarkan teks anak-anak tentang lingkungan.";
-            }
-
-            contentTextarea.value = "Menghasilkan pertanyaan...";
-
-            try {
-                let response = await fetch("http://127.0.0.1:8000/literacy/teacher/generate_questions/ai", { // Sesuaikan URL Laravel
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    }
-                });
-
-                let data = await response.json();
-
-                if (response.ok) {
-                    contentTextarea.value = data.generated_questions || "Soal berhasil dibuat, tapi tidak ada data.";
-                } else {
-                    contentTextarea.value = "Error: " + (data.message || "Terjadi kesalahan.");
-                }
-
-            } catch (error) {
-                contentTextarea.value = "Gagal menghubungi server!";
-                console.error("Error:", error);
-            }
-        });
-    </script> --}}
-    <script>
-        document.getElementById("aiForm").addEventListener("submit", async function (event) {
-            event.preventDefault(); // Mencegah refresh halaman
-    
-            let contentDiv = document.getElementById("content");
-            let content = contentDiv.innerText.trim();
-    
-            if (content === "") {
-                content = "Buatlah soal literasi berdasarkan teks anak-anak tentang lingkungan.";
-            }
-    
-            contentDiv.innerText = "Menghasilkan pertanyaan...";
-    
-            try {
-                let response = await fetch("http://127.0.0.1:8000/literacy/teacher/generate_questions/ai", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ content }) // << INI PENTING BANGET!
-                });
-    
-                let data = await response.json();
-    
-                if (response.ok) {
-                    contentDiv.innerText = data.generated_questions || "Soal berhasil dibuat, tapi tidak ada data.";
-                } else {
-                    contentDiv.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
-                }
-    
-            } catch (error) {
-                contentDiv.innerText = "Gagal menghubungi server!";
-                console.error("Error:", error);
-            }
-        });
-    </script>    
     <!-- JavaScript untuk mengubah konten tab -->
     <script>
         function materialModal(id, title, controller) {
