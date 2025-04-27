@@ -30,7 +30,10 @@
                 <div class="mx-auto">
                     <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
                         <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard Student</a>
+                            <a class="nav-link active" aria-current="page"
+                            href="{{ Auth::user()->role === 'teacher' ? '/dashboard-student' : '/dashboard-student' }}">
+                            Dashboard {{ Auth::user()->role === 'teacher' ? 'Teacher' : 'Student' }}
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="#">Tutorials</a>
@@ -39,7 +42,7 @@
                             <a class="nav-link active" aria-current="page" href="#">Contact Us</a>
                         </li>
                     </ul>
-                </div>
+                </div>                
                 <div class="dropdown">
                     <p style="margin-top: 10px; margin-right: 10px;">{{auth()->user()->name}}
                     <img src="{{ asset('./images/Group.png') }}" alt="Group" style="height: 50px; margin-right: 10px;">
