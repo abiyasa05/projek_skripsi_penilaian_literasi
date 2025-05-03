@@ -346,7 +346,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($assessments->whereIn('status', ['in_progress', 'completed']) as $index => $assessment)
+                                    @forelse ($assessments as $index => $assessment)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>{{ $assessment->user->name ?? 'Tidak Diketahui' }}</td>

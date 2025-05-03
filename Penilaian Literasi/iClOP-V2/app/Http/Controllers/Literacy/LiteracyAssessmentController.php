@@ -33,7 +33,9 @@ class LiteracyAssessmentController extends Controller
      */
     public function index()
     {
-        $assessments = LiteracyAssessment::where('user_id', Auth::id())->get();
+        $assessments = LiteracyAssessment::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('literacy.student.assessments.index', compact('assessments'));
     }
