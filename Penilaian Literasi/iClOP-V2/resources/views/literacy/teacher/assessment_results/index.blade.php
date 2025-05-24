@@ -304,7 +304,8 @@
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
                                 <div class="col">
-                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}" style="color: #34364A;">Assessment Results</a>
+                                    <a class="nav-link" href="{{ route('literacy_teacher_assessment_results') }}"
+                                        style="color: #34364A;">Assessment Results</a>
                                 </div>
                             </div>
                         </li>
@@ -352,31 +353,35 @@
                                             <td>{{ $assessment->user->name ?? 'Tidak Diketahui' }}</td>
                                             <td>
                                                 <span class="badge 
-                                                    @if ($assessment->status == 'completed') bg-success
-                                                    @elseif ($assessment->status == 'in_progress') bg-warning
-                                                    @endif">
+                                                        @if ($assessment->status == 'completed') bg-success
+                                                        @elseif ($assessment->status == 'in_progress') bg-warning
+                                                        @endif">
                                                     {{ $assessment->status == 'completed' ? 'Selesai' : 'Dalam Pengerjaan' }}
                                                 </span>
                                             </td>
                                             <td>{{ $assessment->score ?? 'Belum Dinilai' }}</td>
                                             <td>
                                                 @if ($assessment->status == 'in_progress')
-                                                    <button class="btn btn-sm btn-success" disabled>Lihat Hasil</button>
+                                                    <button onclick="openAssessmentResult('{{ route('literacy_teacher_assessment_results_view', $assessment->id) }}')" class="btn btn-sm btn-success" disabled>
+                                                        Lihat Hasil
+                                                    </button>
                                                 @else
-                                                    <a href="{{ route('literacy_teacher_assessment_results_view', $assessment->id) }}" class="btn btn-sm btn-success">Lihat Hasil</a>
+                                                    <a href="{{ route('literacy_teacher_assessment_results_view', $assessment->id) }}"
+                                                        class="btn btn-sm btn-success" target="_blank">Lihat Hasil</a>
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="5" class="text-center text-muted">Belum ada asesmen yang sedang berlangsung atau selesai.</td>
+                                            <td colspan="5" class="text-center text-muted">Belum ada asesmen yang sedang
+                                                berlangsung atau selesai.</td>
                                         </tr>
                                     @endforelse
-                                </tbody>                                
+                                </tbody>
                             </table>
                         </div>
-                    </div>                                        
-                </div>                
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -401,6 +406,13 @@
             </div>
         </div>
     </div>
+
+    
+    <script>
+        function openAssessmentResult(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    </script>
     <!-- JavaScript untuk mengubah konten tab -->
     <script>
         function materialModal(id, title, controller) {
