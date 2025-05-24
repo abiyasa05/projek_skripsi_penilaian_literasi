@@ -305,7 +305,12 @@
                     <div class="col-span-12 lg:col-span-9 space-y-4">
                         <!-- Bagian Pilihan Ganda -->
                         @if ($multipleChoiceQuestions->isNotEmpty())
-                            <h4 class="text-base font-semibold mt-4">Bagian 1: Pilihan Ganda</h4>
+                            <div class="row mt-4">
+                                <div class="col-12 d-flex justify-content-between align-items-center">
+                                    <h4 class="text-base font-semibold mb-2">Bagian 1: Pilihan Ganda</h4>
+                                    <button onclick="window.close()" class="btn btn-outline-secondary btn-sm">Kembali</button>
+                                </div>
+                            </div>
                             <p class="text-gray-500 text-sm mb-3">Pilih salah satu jawaban yang paling tepat.</p>
 
                             @foreach ($multipleChoiceQuestions as $question)
