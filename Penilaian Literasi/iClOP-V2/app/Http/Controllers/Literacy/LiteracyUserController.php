@@ -20,7 +20,7 @@ class LiteracyUserController extends Controller
     // 📋 1. Menampilkan daftar pengguna
     public function users()
     {
-        $users = User::all();
+        $users = User::orderBy('created_at', 'desc')->get();;
         $materials = LiteracyMaterial::all();
         $questions = LiteracyQuestion::all();
         return view('literacy.teacher.users.index', [
