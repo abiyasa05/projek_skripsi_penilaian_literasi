@@ -328,14 +328,22 @@
                                             <td>{{ $assessment->score ?? 'Belum Dinilai' }}</td>
                                             <td>
                                                 @if ($assessment->status == 'pending')
-                                                    <form action="{{ route('literacy_assessments_start', $assessment->id) }}" method="POST" style="display:inline;">
+                                                    <form id="startForm-{{ $assessment->id }}" action="{{ route('literacy_assessments_start', $assessment->id) }}" method="POST" target="_blank" style="display:inline;">
                                                         @csrf
-                                                        <button type="submit" class="btn btn-sm btn-primary text-white">Mulai</button>
+                                                        <button type="button" class="btn btn-sm btn-primary text-white"
+                                                            onclick="document.getElementById('startForm-{{ $assessment->id }}').submit();">
+                                                            Mulai
+                                                        </button>
                                                     </form>
                                                 @elseif ($assessment->status == 'in_progress')
-                                                    <a href="{{ route('literacy_assessments_continue', $assessment->id) }}" class="btn btn-sm btn-warning text-white">Lanjutkan</a>
+                                                    <a href="{{ route('literacy_assessments_continue', $assessment->id) }}" 
+                                                        class="btn btn-sm btn-warning text-white" target="_blank">
+                                                        Lanjutkan
+                                                    </a>
                                                 @else
-                                                    <a href="{{ route('literacy_assessment_result', $assessment->id) }}" class="btn btn-sm btn-success">Lihat Hasil</a>
+                                                    <button onclick="openAssessmentResult('{{ route('literacy_assessment_result', $assessment->id) }}')" class="btn btn-sm btn-success">
+                                                        Lihat Hasil
+                                                    </button>
                                                 @endif
                                             </td>
                                         </tr>
@@ -373,6 +381,12 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function openAssessmentResult(url) {
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+    </script>
     <!-- JavaScript untuk mengubah konten tab -->
     <script>
         function materialModal(id, title, controller) {

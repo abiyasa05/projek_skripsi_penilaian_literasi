@@ -341,7 +341,12 @@
                 @endphp
 
                 <div class="content">
-                    <p style="font-size: 24px; font-weight: 500; color: #34364A;">Hasil Asesmen Siswa</p>
+                    <div class="row mb-3">
+                        <div class="col-12 d-flex justify-content-between align-items-center">
+                            <p style="font-size: 24px; font-weight: 500; color: #34364A; margin-bottom: 0;">Hasil Asesmen Siswa</p>
+                            <button onclick="window.close()" class="btn btn-outline-secondary btn-sm">Kembali</button>
+                        </div>
+                    </div>
                     <div class="mt-4">
                         <h5>Detail Jawaban</h5>
 
