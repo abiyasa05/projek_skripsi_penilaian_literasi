@@ -11,17 +11,17 @@ use Illuminate\Support\Facades\Storage;
 
 class LiteracyMaterialController extends Controller
 {
-    function materials()
+    public function materials()
     {
-        $materials = LiteracyMaterial::all();
+        $materials = LiteracyMaterial::orderBy('created_at', 'desc')->get();
         $users = User::all();
         $questions = LiteracyQuestion::all();
+
         return view('literacy.teacher.materials.index', [
             'materials' => $materials,
             'users' => $users,
             'questions' => $questions,
         ]);
-
     }
 
     public function show($id)
@@ -40,22 +40,21 @@ class LiteracyMaterialController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048' // Ubah 'file_path' jadi 'file'
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048'
         ]);
 
         $filePath = null;
 
         if ($request->hasFile('file')) {
-            // Simpan file dengan nama asli ke folder public/literacy/document
             $originalName = $request->file('file')->getClientOriginalName();
-            $filePath = 'literacy/document/' . $originalName;
-            $request->file('file')->move(public_path('literacy/document'), $originalName);
+            $path = $request->file('file')->storeAs('public/literacy_materials', $originalName);
+            $filePath = str_replace('public/', '', $path); // Simpan path relatif
         }
 
         LiteracyMaterial::create([
             'title' => $request->title,
             'description' => $request->description,
-            'file_path' => $filePath,  // Simpan path relatif ke folder public
+            'file_path' => $filePath,
             'user_id' => auth()->id()
         ]);
 
@@ -73,25 +72,20 @@ class LiteracyMaterialController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048' // Ubah 'file_path' jadi 'file'
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048'
         ]);
 
         $material = LiteracyMaterial::findOrFail($id);
         $filePath = $material->file_path;
 
         if ($request->hasFile('file')) {
-            // Hapus file lama jika ada
-            if ($filePath) {
-                $oldFilePath = public_path($filePath);
-                if (file_exists($oldFilePath)) {
-                    unlink($oldFilePath);
-                }
+            if ($filePath && Storage::exists('public/' . $filePath)) {
+                Storage::delete('public/' . $filePath);
             }
 
-            // Simpan file baru dengan nama asli ke folder public/literacy/document
             $originalName = $request->file('file')->getClientOriginalName();
-            $filePath = 'literacy/document/' . $originalName;
-            $request->file('file')->move(public_path('literacy/document'), $originalName);
+            $path = $request->file('file')->storeAs('public/literacy_materials', $originalName);
+            $filePath = str_replace('public/', '', $path);
         }
 
         $material->update([
@@ -107,12 +101,8 @@ class LiteracyMaterialController extends Controller
     {
         $material = LiteracyMaterial::findOrFail($id);
 
-        // Hapus file kalau ada
-        if ($material->file_path) {
-            $filePath = public_path($material->file_path); // Mendapatkan path lengkap di public
-            if (file_exists($filePath)) {
-                unlink($filePath); // Hapus file secara langsung
-            }
+        if ($material->file_path && Storage::exists('public/' . $material->file_path)) {
+            Storage::delete('public/' . $material->file_path);
         }
 
         $material->delete();
@@ -122,13 +112,12 @@ class LiteracyMaterialController extends Controller
     public function show_materials($id)
     {
         $material = LiteracyMaterial::findOrFail($id);
+        $path = storage_path('app/public/' . $material->file_path);
 
-        // Pastikan file tersedia
-        if (!$material->file_path || !file_exists(public_path($material->file_path))) {
+        if (!file_exists($path)) {
             abort(404, 'File tidak ditemukan');
         }
 
-        // Arahkan ke file langsung agar bisa ditampilkan di browser
-        return response()->file(public_path($material->file_path));
+        return response()->file($path);
     }
 }
