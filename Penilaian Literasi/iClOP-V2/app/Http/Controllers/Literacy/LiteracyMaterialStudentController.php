@@ -11,17 +11,17 @@ use Illuminate\Support\Facades\Storage;
 
 class LiteracyMaterialStudentController extends Controller
 {
-    function materials()
+    public function materials()
     {
-        $materials = LiteracyMaterial::all();
+        $materials = LiteracyMaterial::orderBy('created_at', 'desc')->get();
         $users = User::all();
         $questions = LiteracyQuestion::all();
+
         return view('literacy.student.materials.index', [
             'materials' => $materials,
             'users' => $users,
             'questions' => $questions,
         ]);
-
     }
 
     public function show($id)
@@ -32,7 +32,7 @@ class LiteracyMaterialStudentController extends Controller
 
     function show_materials()
     {
-        $materials_student = LiteracyMaterial::all();
+        $materials_student = LiteracyMaterial::orderBy('created_at', 'desc')->get();
         return view('literacy.student.materials.index', [
             'materials_student' => $materials_student,
         ]);
