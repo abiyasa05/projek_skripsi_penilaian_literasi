@@ -368,7 +368,7 @@
                                                 @if ($history_generated_text->question_type == 'multiple_choice')
                                                     Pilihan Ganda
                                                 @elseif ($history_generated_text->question_type == 'essay')
-                                                    Isiann
+                                                    Isian
                                                 @else
                                                     -
                                                 @endif
