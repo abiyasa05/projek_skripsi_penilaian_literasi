@@ -287,6 +287,19 @@
                         <li class="nav-item">
                             <div class="row align-items-start">
                                 <div class="col-2">
+                                    <i class="fas fa-history"
+                                        style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
+                                </div>
+                                <div class="col">
+                                    <a class="nav-link" href="{{ route('literacy_teacher_generate_questions_history') }}"
+                                        style="color: #34364A;">Generated History</a>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="nav-item">
+                            <div class="row align-items-start">
+                                <div class="col-2">
                                     <i class="fas fa-question-circle"
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
@@ -335,19 +348,46 @@
                 <div class="content">
                     <p style="font-size: 24px; font-weight: 500; color: #34364A;">AI Generated Questions</p>
                     <div class="container mt-4">
-                
+
                         <!-- Form untuk generate question -->
                         <form id="aiForm" class="mt-4">
+                            @csrf
                             <div class="card mt-2">
                                 <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="material_id" class="form-label">Pilih Materi</label>
+                                        <select class="form-select" id="material_id" name="material_id" required>
+                                            <option value="">-- Pilih Materi --</option>
+                                            @foreach($materials as $material)
+                                                <option value="{{ $material->id }}">{{ $material->title }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="question_type" class="form-label">Tipe Soal</label>
+                                        <select class="form-select" id="question_type" name="question_type" required>
+                                            <option value="">-- Pilih Tipe Soal --</option>
+                                            <option value="multiple_choice">Pilihan Ganda</option>
+                                            <option value="essay">Isian</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="question_count" class="form-label">Jumlah Soal</label>
+                                        <input type="number" class="form-control" id="question_count"
+                                            name="question_count" min="1" max="20" value="5" required>
+                                    </div>
+
                                     <div
                                         style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #f8f9fa; max-height: 300px; overflow-y: auto;">
                                         <pre style="margin: 0;">
-                                            <code id="content" contenteditable="true" style="white-space: pre-wrap; outline: none;">
-                                                {{ $latestGeneratedText->generate_text ?? '' }}
+                                            <code id="content" style="white-space: pre-wrap;">
+                                                {{ $latestGeneratedText->generate_text ?? 'Hasil generate soal akan muncul di sini...' }}
                                             </code>
                                         </pre>
                                     </div>
+
                                     <div class="mt-3">
                                         <button type="submit" class="btn btn-primary">Generate</button>
                                         <button type="button" class="btn btn-secondary" id="resetButton">Reset</button>
@@ -416,6 +456,61 @@
             const aiForm = document.getElementById('aiForm');
             const contentElement = document.getElementById('content');
             const resetButton = document.getElementById('resetButton');
+
+            aiForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(aiForm);
+                contentElement.innerText = "Menghasilkan pertanyaan...";
+
+                try {
+                    let payload = {
+                        material_id: document.getElementById('material_id').value,
+                        question_type: document.getElementById('question_type').value,
+                        question_count: parseInt(document.getElementById('question_count').value)
+                    };
+
+                    let response = await fetch("{{ route('literacy_teacher_generate_from_ai') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": '{{ csrf_token() }}',
+                            "Accept": "application/json",
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    let data = await response.json();
+
+                    if (response.ok) {
+                        // Mengubah output untuk menggunakan label yang lebih user-friendly
+                        let formattedText = data.generated_questions;
+                        if (formattedText) {
+                            formattedText = formattedText.replace(/Soal Pilihan Ganda:/g, '**Soal Pilihan Ganda:**');
+                            formattedText = formattedText.replace(/Soal Isian:/g, '**Soal Isian:**');
+                        }
+                        contentElement.innerText = formattedText || "Soal berhasil dibuat, tapi tidak ada data.";
+                    } else {
+                        contentElement.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
+                    }
+                } catch (error) {
+                    contentElement.innerText = "Gagal menghubungi server!";
+                    console.error("Error:", error);
+                }
+            });
+
+            resetButton.addEventListener('click', function () {
+                contentElement.innerText = 'Hasil generate soal akan muncul di sini...';
+            });
+        });
+    </script>
+
+    {{--
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const aiForm = document.getElementById('aiForm');
+            const contentElement = document.getElementById('content');
+            const resetButton = document.getElementById('resetButton');
             const generateButton = aiForm.querySelector('button[type="submit"]'); // Get the Generate button
 
             // Function to send the content to the server and get generated questions
@@ -459,7 +554,7 @@
                 contentElement.innerText = '';  // Clear the content
             });
         });
-    </script>
+    </script> --}}
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
