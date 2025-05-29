@@ -287,6 +287,19 @@
                         <li class="nav-item">
                             <div class="row align-items-start">
                                 <div class="col-2">
+                                    <i class="fas fa-history"
+                                        style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
+                                </div>
+                                <div class="col">
+                                    <a class="nav-link" href="{{ route('literacy_teacher_generate_questions_history') }}"
+                                        style="color: #34364A;">Generated History</a>
+                                </div>
+                            </div>
+                        </li>
+
+                        <li class="nav-item">
+                            <div class="row align-items-start">
+                                <div class="col-2">
                                     <i class="fas fa-question-circle"
                                         style="margin-top: 12px; margin-left: 15px; color: #676767;"></i>
                                 </div>
