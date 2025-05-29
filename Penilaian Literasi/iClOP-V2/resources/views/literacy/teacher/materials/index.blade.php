@@ -213,18 +213,25 @@
 <body>
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
-        <div class="container-fluid d-flex justify-content-between align-items-center px-3 px-md-4">
-
-            <!-- Hamburger Toggle - Kiri (hanya tampil di mobile) -->
+        <div class="container-fluid d-flex justify-content-between align-items-center px-3 px-md-4 position-relative">
+            <!-- Toggle Sidebar Kiri (mobile only) -->
             <button id="toggleSidebar" class="btn btn-primary d-md-none">
                 <i class="fas fa-bars"></i>
             </button>
 
-            <!-- Logo - Tengah di desktop, kanan di mobile -->
+            <!-- Dashboard Student - Tampil di tengah pada mobile -->
+            <div class="d-md-none position-absolute start-50 translate-middle-x text-center">
+                <a href="/dashboard-student" class="nav-link active text-dark fw-bold d-flex flex-column">
+                    <span>Dashboard</span>
+                    <span>Teacher</span>
+                </a>
+            </div>
+
+            <!-- Logo (di kanan pada mobile, tengah di desktop) -->
             <img src="{{ asset('./images/logo.png') }}" alt="logo" width="104" height="65" class="order-md-1 order-2 ms-auto" id="logoResponsive">
 
             <!-- Menu Desktop -->
-            <div class="collapse navbar-collapse order-md-2 order-3" id="navbarSupportedContent">
+            <div class="collapse navbar-collapse order-md-2 order-3 d-none d-md-flex" id="navbarSupportedContent">
                 <div class="mx-auto">
                     <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
                         <li class="nav-item">
@@ -235,15 +242,14 @@
                 <div class="dropdown">
                     <p style="margin-top: 10px; margin-right: 10px;">
                         {{ auth()->user()->name }}
-                        <img src="{{ asset('./images/Group.png') }}" alt="Group"
-                            style="height: 50px; margin-right: 10px;">
+                        <img src="{{ asset('./images/Group.png') }}" alt="Group" style="height: 50px; margin-right: 10px;">
                         <i class="fas fa-chevron-down" style="color: #0079FF;"></i>
-                    <div class="dropdown-content" id="dropdownContent">
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        </form>
-                    </div>
+                        <div class="dropdown-content" id="dropdownContent">
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            </form>
+                        </div>
                     </p>
                 </div>
             </div>
