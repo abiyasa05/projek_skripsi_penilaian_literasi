@@ -118,6 +118,9 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
 
         Route::post('/generate_questions/ai', [LiteracyGenerateQuestionsController::class, 'generate_from_ai'])
             ->name('literacy_teacher_generate_from_ai');
+        
+        Route::get('/generate_questions/history', [LiteracyGenerateQuestionsController::class, 'history_generated_texts'])
+            ->name('literacy_teacher_generate_questions_history');
 
         Route::get('/assessment_results', [LiteracyTeacherAssessmentController::class, 'index'])
             ->name('literacy_teacher_assessment_results');
