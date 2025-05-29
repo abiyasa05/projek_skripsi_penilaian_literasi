@@ -41,13 +41,12 @@ class LiteracyMaterialStudentController extends Controller
     public function view_materials($id)
     {
         $material_student = LiteracyMaterial::findOrFail($id);
+        $path = storage_path('app/public/' . $material_student->file_path);
 
-        // Pastikan file tersedia
-        if (!$material_student->file_path || !file_exists(public_path($material_student->file_path))) {
+        if (!file_exists($path)) {
             abort(404, 'File tidak ditemukan');
         }
 
-        // Arahkan ke file langsung agar bisa ditampilkan di browser
-        return response()->file(public_path($material_student->file_path));
+        return response()->file($path);
     }
 }

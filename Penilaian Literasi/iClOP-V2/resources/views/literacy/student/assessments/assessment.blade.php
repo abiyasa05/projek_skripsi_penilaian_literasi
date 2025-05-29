@@ -18,6 +18,58 @@
             padding: 20px;
         }
 
+        @media (max-width: 768px) {
+            #sidebarMenu {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 245px;
+                height: 100vh;
+                background-color: #fff;
+                z-index: 1040;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                display: block !important;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                overflow-y: auto;
+                padding-top: 60px;
+            }
+
+            #sidebarMenu.active {
+                transform: translateX(0);
+            }
+
+            #toggleSidebar {
+                position: relative;
+                z-index: 1051;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #rightSidebar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: 245px;
+                height: 100vh;
+                background-color: #fff;
+                z-index: 1040;
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+                box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+                overflow-y: auto;
+                padding-top: 60px;
+            }
+
+            #rightSidebar.active {
+                transform: translateX(0);
+            }
+
+            #toggleRightSidebar {
+                position: relative;
+                z-index: 1051;
+            }
+        }
 
         /* NAV LINK */
         .nav-link {
@@ -188,39 +240,55 @@
 <body>
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
-        <div class="container-fluid">
-            <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-            <img src={{asset("./images/logo.png")}} alt="logo" width="104" height="65">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <div class="mx-auto">
-                    <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard
-                                Student</a>
-                        </li>
-                    </ul>
+        <div class="container-fluid px-3 px-md-4">
+            <!-- Wrapper mobile: Logo di tengah, toggle di kanan -->
+            <div class="d-flex w-100 align-items-center justify-content-between d-lg-none">
+                <!-- Logo di tengah secara absolut -->
+                <div class="position-absolute start-50 translate-middle-x">
+                    <img src="{{ asset('./images/logo.png') }}" alt="logo" width="104" height="65" id="logoResponsive">
                 </div>
-                <div class="dropdown">
-                    <p style="margin-top: 10px; margin-right: 10px;">{{auth()->user()->name}}
-                        <img src="{{ asset('./images/Group.png') }}" alt="Group"
-                            style="height: 50px; margin-right: 10px;">
-                        <i class="fas fa-chevron-down" style="color: #0079FF;"></i>
-                    <div class="dropdown-content" id="dropdownContent">
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST">
-                            @csrf
-                            <a href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                        </form>
 
-                    </div>
+                <!-- Toggle Sidebar Kiri -->
+                <button id="toggleSidebar" class="btn btn-primary">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <!-- Toggle Sidebar Kanan -->
+                <button id="toggleRightSidebar" class="btn btn-primary ms-2">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Desktop Layout -->
+            <div class="d-none d-lg-flex w-100 align-items-center justify-content-between">
+                <!-- Logo Kiri -->
+                <div>
+                    <a href="/dashboard-student">
+                        <img src="{{ asset('./images/logo.png') }}" alt="logo" width="104" height="65">
+                    </a>
+                </div>
+
+                <!-- Menu Tengah -->
+                <ul class="navbar-nav mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard-student">Dashboard Student</a>
+                    </li>
+                </ul>
+
+                <!-- User Kanan -->
+                <div class="dropdown">
+                    <p class="m-0 d-flex align-items-center">
+                        {{ auth()->user()->name }}
+                        <img src="{{ asset('./images/Group.png') }}" alt="Group" style="height: 50px; margin-left: 10px; margin-right: 10px;">
+                        <i class="fas fa-chevron-down" style="color: #0079FF;"></i>
+                        <div class="dropdown-content" id="dropdownContent">
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            </form>
+                        </div>
                     </p>
                 </div>
-                <!-- <button class="btn btn-primary custom-button-sign-up" onclick="window.location.href='register.html'">Sign Up</button> -->
             </div>
         </div>
     </nav>
@@ -229,7 +297,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- SIDEBAR -->
-            <nav class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow" style="position: sticky; top: 20px;">
+            <nav id="sidebarMenu" class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow">
                 <div class="sidebar-sticky" style="margin-top: 20px;">
                     <ul class="nav flex-column">
                         <li class="nav-item" style="margin-bottom: 40px;">
@@ -416,8 +484,71 @@
                 </div>
             </main>
     
-            <!-- NAVIGASI NOMOR SOAL -->
-            <aside class="col-md-2 d-flex flex-column align-items-end" style="position: sticky; top: 20px; height: fit-content;">
+            <!-- NAVIGASI NOMOR SOAL DESKTOP -->
+            <aside class="col-md-2 d-none d-md-flex flex-column align-items-end" style="position: sticky; top: 20px; height: fit-content;">
+                <div class="card p-3">
+                    <h5 class="font-bold mb-3">Navigasi Soal</h5>
+            
+                    <!-- Navigasi Pilihan Ganda -->
+                    <div class="mb-3">
+                        <h6 class="font-bold text-secondary">Pilihan Ganda</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @php $multipleChoiceNumber = 0; @endphp
+                            @foreach ($questions as $question)
+                                @if ($question->options->isNotEmpty())
+                                    @php 
+                                        $multipleChoiceNumber++; 
+                                        $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
+                                        $btnClass = $savedAnswer && $savedAnswer->option_id ? 'btn-primary border-white' : 'btn-outline-secondary';
+                                    @endphp
+                                    <button
+                                        id="nav-mc-{{ $multipleChoiceNumber }}"
+                                        class="btn {{ $btnClass }} d-flex justify-content-center align-items-center"
+                                        style="width: 35px; height: 35px;"
+                                        onclick="navigateToQuestion('mc', {{ $multipleChoiceNumber }})"
+                                        data-question-id="{{ $question->id }}">
+                                        {{ $multipleChoiceNumber }}
+                                    </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    <hr>
+            
+                    <!-- Navigasi Isian -->
+                    <div class="mb-3">
+                        <h6 class="font-bold text-secondary">Isian</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            @php $essayNumber = 0; @endphp
+                            @foreach ($questions as $question)
+                                @if ($question->options->isEmpty())
+                                    @php 
+                                        $essayNumber++; 
+                                        $savedAnswer = $question->answers->where('assessment_id', $assessment->id)->first();
+                                        $btnClass = $savedAnswer && $savedAnswer->answer_text ? 'btn-primary border-white' : 'btn-outline-secondary';
+                                    @endphp
+                                    <button
+                                        id="nav-essay-{{ $essayNumber }}"
+                                        class="btn {{ $btnClass }} d-flex justify-content-center align-items-center"
+                                        style="width: 35px; height: 35px;"
+                                        onclick="navigateToQuestion('essay', {{ $essayNumber }})"
+                                        data-question-id="{{ $question->id }}">
+                                        {{ $essayNumber }}
+                                    </button>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-primary w-100 py-2 fw-semibold" onclick="checkUnansweredQuestions()">
+                            Selesai
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- NAVIGASI NOMOR SOAL MOBILE -->
+            <aside id="rightSidebar" class="d-md-none">
                 <div class="card p-3">
                     <h5 class="font-bold mb-3">Navigasi Soal</h5>
             
@@ -504,6 +635,21 @@
         </div>
     </div>
 
+    {{-- Sidebar Kiri --}}
+    <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            var sidebar = document.getElementById('sidebarMenu');
+            sidebar.classList.toggle('active');
+        });
+    </script>
+
+    {{-- Sidebar Kanan --}}
+    <script>
+        document.getElementById('toggleRightSidebar').addEventListener('click', function () {
+            var rightSidebar = document.getElementById('rightSidebar');
+            rightSidebar.classList.toggle('active');
+        });
+    </script>
     <script>
         function checkUnansweredQuestions() {
             let unansweredCount = 0;
