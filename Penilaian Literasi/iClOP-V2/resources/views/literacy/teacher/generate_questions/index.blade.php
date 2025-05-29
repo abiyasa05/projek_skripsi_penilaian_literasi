@@ -17,7 +17,33 @@
             background-color: #FFFFFF;
             padding: 20px;
         }
+        
+        @media (max-width: 768px) {
+            #sidebarMenu {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 245px;
+                height: 100vh;
+                background-color: #fff;
+                z-index: 1040;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease-in-out;
+                display: block !important;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+                overflow-y: auto;
+                padding-top: 60px;
+            }
 
+            #sidebarMenu.active {
+                transform: translateX(0);
+            }
+
+            #toggleSidebar {
+                position: relative;
+                z-index: 1051;
+            }
+        }
 
         /* NAV LINK */
         .nav-link {
@@ -186,40 +212,40 @@
 
 <body style="padding-bottom: 45px;">
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
-        <div class="container-fluid">
-            <!-- <a class="navbar-brand" href="#">Navbar</a> -->
-            <img src={{asset("./images/logo.png")}} alt="logo" width="104" height="65">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+    <nav class="navbar navbar-expand-lg px-4" style="background-color: #FEFEFE;">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <!-- Hamburger Toggle - Kiri (hanya tampil di mobile) -->
+            <button id="toggleSidebar" class="btn btn-primary d-md-none">
+                <i class="fas fa-bars"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+            <!-- Logo - Tengah di desktop, kanan di mobile -->
+            <img src="{{ asset('./images/logo.png') }}" alt="logo" width="104" height="65" class="order-md-1 order-2 ms-auto" id="logoResponsive">
+
+            <!-- Menu Desktop -->
+            <div class="collapse navbar-collapse order-md-2 order-3" id="navbarSupportedContent">
                 <div class="mx-auto">
                     <ul class="navbar-nav mb-2 mb-lg-0 justify-content-center">
                         <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard
-                                Teacher</a>
+                            <a class="nav-link active" aria-current="page" href="/dashboard-student">Dashboard Teacher</a>
                         </li>
                     </ul>
                 </div>
                 <div class="dropdown">
-                    <p style="margin-top: 10px; margin-right: 10px;">{{auth()->user()->name}}
+                    <p style="margin-top: 10px; margin-right: 10px;">
+                        {{ auth()->user()->name }}
                         <img src="{{ asset('./images/Group.png') }}" alt="Group"
                             style="height: 50px; margin-right: 10px;">
                         <i class="fas fa-chevron-down" style="color: #0079FF;"></i>
                     <div class="dropdown-content" id="dropdownContent">
                         <form id="logout-form" action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <a href="#"
-                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
                         </form>
-
                     </div>
                     </p>
                 </div>
-                <!-- <button class="btn btn-primary custom-button-sign-up" onclick="window.location.href='register.html'">Sign Up</button> -->
             </div>
         </div>
     </nav>
@@ -228,7 +254,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- SIDEBAR -->
-            <nav class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow">
+            <nav id="sidebarMenu" class="col-md-2 d-none d-md-block sidebar sidebar-right-shadow">
                 <div class="sidebar-sticky" style="margin-top: 20px;">
                     <ul class="nav flex-column">
                         <li class="nav-item" style="margin-bottom: 40px;">
@@ -452,6 +478,13 @@
     </div>
 
     <script>
+        document.getElementById('toggleSidebar').addEventListener('click', function () {
+            var sidebar = document.getElementById('sidebarMenu');
+            sidebar.classList.toggle('active');
+        });
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             const aiForm = document.getElementById('aiForm');
             const contentElement = document.getElementById('content');
@@ -608,7 +641,7 @@
                 div.classList.add("option-group", "mb-2", "d-flex", "align-items-center");
                 div.innerHTML = `
                     <input type="text" name="options[${optionsCount}][text]" class="form-control me-2 option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
-                    <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 20%;" placeholder="Skor" min="0" max="100" required>
+                    <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 40%;" placeholder="Skor" min="0" max="100" required>
                     <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="ms-2 correct-answer">
                     <span class="ms-1">Jawaban Benar</span>
                     <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
