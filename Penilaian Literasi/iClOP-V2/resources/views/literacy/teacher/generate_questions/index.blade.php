@@ -212,8 +212,8 @@
 
 <body style="padding-bottom: 45px;">
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg px-4" style="background-color: #FEFEFE;">
-        <div class="container d-flex justify-content-between align-items-center">
+    <nav class="navbar navbar-expand-lg" style="background-color: #FEFEFE;">
+        <div class="container-fluid d-flex justify-content-between align-items-center px-3 px-md-4">
 
             <!-- Hamburger Toggle - Kiri (hanya tampil di mobile) -->
             <button id="toggleSidebar" class="btn btn-primary d-md-none">
