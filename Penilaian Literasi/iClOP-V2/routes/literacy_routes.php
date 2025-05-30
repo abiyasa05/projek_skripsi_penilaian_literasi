@@ -121,6 +121,9 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
         
         Route::get('/generate_questions/history', [LiteracyGenerateQuestionsController::class, 'history_generated_texts'])
             ->name('literacy_teacher_generate_questions_history');
+        
+        Route::delete('/generate_questions/history/{id}', [LiteracyGenerateQuestionsController::class, 'destroy_history'])
+            ->name('literacy_teacher_generate_questions_destroy');
 
         Route::get('/assessment_results', [LiteracyTeacherAssessmentController::class, 'index'])
             ->name('literacy_teacher_assessment_results');
