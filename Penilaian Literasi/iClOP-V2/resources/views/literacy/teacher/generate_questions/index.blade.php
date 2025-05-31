@@ -413,11 +413,7 @@
 
                                     <div
                                         style="border: 1px solid #ccc; border-radius: 8px; padding: 1rem; background: #f8f9fa; max-height: 300px; overflow-y: auto;">
-                                        <pre style="margin: 0;">
-                                            <code id="content" style="white-space: pre-wrap;">
-                                                {{ $latestGeneratedText->generate_text ?? 'Hasil generate soal akan muncul di sini...' }}
-                                            </code>
-                                        </pre>
+                                    <pre style="margin: 0; white-space: pre-wrap; text-align: left;"><code id="content">{{ $latestGeneratedText->generate_text ?? 'Hasil generate soal akan muncul di sini...' }}</code></pre>
                                     </div>
 
                                     <div class="mt-3">
