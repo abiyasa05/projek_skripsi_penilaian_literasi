@@ -119,7 +119,7 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
         Route::post('/generate_questions/ai', [LiteracyGenerateQuestionsController::class, 'generate_from_ai'])
             ->name('literacy_teacher_generate_from_ai');
         
-        Route::get('/generate_questions/history', [LiteracyGenerateQuestionsController::class, 'history_generated_texts'])
+        Route::get('/generate_questions/history', [LiteracyGenerateQuestionsController::class, 'history_index'])
             ->name('literacy_teacher_generate_questions_history');
         
         Route::delete('/generate_questions/history/{id}', [LiteracyGenerateQuestionsController::class, 'destroy_history'])
