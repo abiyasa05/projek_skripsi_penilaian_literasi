@@ -17,3 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Tapi izinkan folder literacy_materials di dalamnya
+!storage/app/public/literacy_materials/
+!storage/app/public/literacy_materials/**
