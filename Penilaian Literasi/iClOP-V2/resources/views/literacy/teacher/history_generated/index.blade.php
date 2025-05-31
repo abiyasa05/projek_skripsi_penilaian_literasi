@@ -409,6 +409,8 @@
                                             <td>
                                                 <button class="btn btn-sm btn-info text-white" data-toggle="modal"
                                                     data-target="#detailGeneratedTextModal{{ $history_generated_text->id }}">Detail</button>
+                                                <button class="btn btn-sm btn-danger" data-toggle="modal"
+                                                    data-target="#hapusGeneratedTextModal{{ $history_generated_text->id }}">Hapus</button>
                                             </td>
                                         </tr>
                                     @empty
@@ -420,6 +422,7 @@
                             </table>
                             @foreach ($history_generated_texts as $history_generated_text)
                                 @include('literacy.teacher.history_generated.modals.detail', ['history_generated_text' => $history_generated_text])
+                                @include('literacy.teacher.history_generated.modals.delete', ['history_generated_text' => $history_generated_text])
                             @endforeach
                         </div>
                     </div>
