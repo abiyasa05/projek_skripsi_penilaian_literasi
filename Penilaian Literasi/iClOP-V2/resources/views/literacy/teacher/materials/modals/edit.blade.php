@@ -20,15 +20,10 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="currentFile" class="form-label">File Saat Ini</label>
-                        @if (!empty($material->file_path) && file_exists(public_path($material->file_path)))
-                            <a href="{{ asset($material->file_path) }}" target="_blank"
-                                class="text-blue-500 hover:underline">
-                                Lihat File: {{ basename($material->file_path) }}
-                            </a>
-                        @else
-                            <p class="text-gray-600">Tidak ada file.</p>
-                        @endif
+                        <label class="form-label">File Saat Ini</label>
+                        <div class="form-control bg-light">
+                            {{ $material->file_path ? basename($material->file_path) : '-' }}
+                        </div>
                     </div>
 
                     <div class="mb-3">
