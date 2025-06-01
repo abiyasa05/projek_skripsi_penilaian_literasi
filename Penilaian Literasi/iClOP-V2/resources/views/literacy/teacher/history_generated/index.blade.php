@@ -385,7 +385,7 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Hasil Generate</th>
+                                        {{-- <th>Hasil Generate</th> --}}
                                         <th>Tipe Soal</th>
                                         <th>Jumlah Soal</th>
                                         <th>Aksi</th>
@@ -395,7 +395,7 @@
                                     @forelse ($history_generated_texts as $index => $history_generated_text)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $history_generated_text->generate_text }}</td>
+                                            {{-- <td>{{ $history_generated_text->generate_text }}</td> --}}
                                             <td>
                                                 @if ($history_generated_text->question_type == 'multiple_choice')
                                                     Pilihan Ganda
