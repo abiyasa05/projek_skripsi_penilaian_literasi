@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
 
 
     <title>iCLOP</title>
@@ -63,17 +64,19 @@
 @auth
 
     <!-- CONTENT -->
-    <div class="container" style="margin-top: 70px; justify-content: center; align-items: center;">
-        <p style="font-size: 22px;">Choose your<br><span style="font-size: 35px; font-weight: 600; color: #34364A;">Learning Materials</span></p>
+    <div class="container px-4 px-md-0" style="margin-top: 70px;">
+    <!-- Judul -->
+    <p style="font-size: 22px;">Choose your<br>
+        <span style="font-size: 35px; font-weight: 600; color: #34364A;">Learning Materials</span>
+    </p>
 
         <!-- CARD 1 -->
         <!-- <div class="row" style="margin-top: 45px; display: flex; justify-content: center; align-items: center;"> -->
-        <div class="row" style="margin-top: 45px;">
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src={{asset("./images/cards/Android.png")}} class="card-img-top" style="width: auto; height: 200px;">
+        <div class="d-flex flex-wrap" style="gap: 25px; margin-top: 45px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Android.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">Android programming
-                        with Java and Kotlin</h5>
+                    <h5 class="card-title">Android programming with Java and Kotlin</h5>
                     <div class="row align-items-start">
                         <div class="col-1">
                             <img src={{asset("./images/book.png")}} style="width: 13px; height: 16px;">
@@ -82,43 +85,43 @@
                             <p>18 learning topics</p>
                         </div>
                     </div>
-                    <div style="margin-top: auto;">
+                    <div class="mt-auto">
                         <a href="/android23/topic" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src={{asset("./images/cards/Flutter.png")}} class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Flutter.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Mobile programming with Flutter</h5>
                     <div class="row align-items-start">
                         <div class="col-1">
-                            <img src={{asset("./images/book.png")}} style="width: 13px; height: 16px;">
+                            <img src="{{asset("./images/book.png ")}}" style="width: 13px; height: 16px;">
                         </div>
                         <div class="col">
                             <p>18 learning topics</p>
                         </div>
                     </div>
-                    <div style="margin-top: auto;">
+                    <div class="mt-auto">
                         <a href="/flutter/start" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height:375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src={{asset("./images/cards/Node.js.png")}} class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Node.js.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Web application with Node.JS</h5>
                     <div class="row align-items-start">
                         <div class="col-1">
-                            <img src={{asset("./images/book.png ")}} style="width: 13px; height: 16px;">
+                            <img src="{{asset("./images/book.png ")}}" style="width: 13px; height: 16px;">
                         </div>
                         <div class="col">
                             <p>18 learning topics</p>
                         </div>
                     </div>
-                    <div style="margin-top: auto;">
+                    <div class="mt-auto">
                         <a href="/nodejs" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
@@ -128,9 +131,9 @@
 
         <!-- CARD 2 -->
         <!-- <div class="row" style="margin-top: 45px; display: flex; justify-content: center; align-items: center;"> -->
-        <div class="row" style="margin-top: 45px;">
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/Python.png")}}" class="card-img-top" style="width: auto; height: 200px;">
+        <div class="d-flex flex-wrap" style="gap: 25px; margin-top: 45px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Python.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Python programming</h5>
                     <div class="row align-items-start">
@@ -147,8 +150,8 @@
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/MySQL.png")}}" class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/MySQL.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">SQL Querying with MySQL</h5>
                     <div class="row align-items-start">
@@ -165,8 +168,8 @@
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/PostgreSQL.png")}}" class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/PostgreSQL.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">SQL Querying with PostgreSQL</h5>
                     <div class="row align-items-start">
@@ -187,9 +190,9 @@
 
         <!-- CARD 3 -->
         <!-- <div class="row" style="margin-top: 45px; display: flex; justify-content: center; align-items: center;"> -->
-        <div class="row" style="margin-top: 45px;">
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/Network.png ")}}" class="card-img-top" style="width: auto; height: 200px;">
+        <div class="d-flex flex-wrap" style="gap: 25px; margin-top: 45px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Network.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Network programming with Java</h5>
                     <div class="row align-items-start">
@@ -206,8 +209,8 @@
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/Unity.png")}}" class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Unity.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Game programming with Unity</h5>
                     <div class="row align-items-start">
@@ -224,8 +227,8 @@
                 </div>
             </div>
 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/Data analytic.png ")}}" class="card-img-top" style="width: auto; height: 200px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/Data analytic.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Data Analytics with Python</h5>
                     <div class="row align-items-start">
@@ -242,9 +245,13 @@
                 </div>
             </div>
         </div>
-        <div class="row" style="margin-top: 45px;">
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/DB.png ")}}" class="card-img-top" style="width: auto; height: 200px;">
+        <!-- ---------------------------------------------------------------------------------------------------- -->
+
+        <!-- CARD 4 -->
+        <!-- <div class="row" style="margin-top: 45px; display: flex; justify-content: center; align-items: center;"> -->
+        <div class="d-flex flex-wrap" style="gap: 25px; margin-top: 45px;">
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/DB.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Database with PHP Programming</h5>
                     <div class="row align-items-start">
@@ -260,8 +267,9 @@
                     </div>
                 </div>
             </div>
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/React.jpg")}}" class="card-img-top" style="width: auto; height: 200px;">
+
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/React.jpg') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Learn React JS</h5>
                     <div class="row align-items-start">
@@ -276,16 +284,15 @@
                         <a href="{{ route('react_welcome') }}" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
-            </div> 
-            <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <!-- Hapus class mt-3 biar gambar mepet ke atas -->
-                <img src="{{asset('./images/cards/literacy.png')}}" class="card-img-top" 
-                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px 5px 0 0;">
+            </div>
+
+            <div class="card p-0 shadow-sm" style="width: 305px; height: 375px;">
+                <img src="{{ asset('./images/cards/literacy.png') }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Learn Literacy</h5>
                     <div class="row align-items-start">
                         <div class="col-1">
-                            <img src="{{asset('./images/book.png')}}" style="width: 13px; height: 16px;">
+                            <img src="{{asset("./images/book.png ")}}" style="width: 13px; height: 16px;">
                         </div>
                         <div class="col">
                             <p>6 learning topics</p>
@@ -297,28 +304,11 @@
                         @elseif(Auth::user()->role === 'student')
                             <a href="{{ route('literacy_student_materials') }}" class="btn btn-primary">Start Learning</a>
                         @endif
-                    </div>           
-                </div>
-            </div>                                
-            <!-- <div class="card p-0" style="width: 305px; height: 375px; margin-left: 25px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);">
-                <img src="{{asset("./images/cards/DB.png ")}}" class="card-img-top" style="width: auto; height: 200px;">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">Database Programming with PHP</h5>
-                    <div class="row align-items-start">
-                        <div class="col-1">
-                            <img src="{{asset("./images/book.png ")}}" style="width: 13px; height: 16px;">
-                        </div>
-                        <div class="col">
-                            <p>18 learning topics</p>
-                        </div>
-                    </div>
-                    <div style="margin-top: auto;">
-                        <a href="{{ route('welcome') }}" class="btn btn-primary">Start Learning</a>
                     </div>
                 </div>
-            </div> -->
+            </div>
         </div>
-
+        <!-- ---------------------------------------------------------------------------------------------------- -->
     </div>
 
     <!-- FOOTER -->
@@ -375,7 +365,9 @@
     </div>
     </div>
     @endauth
-
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+    </script>
 </body>
     <script src="script.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
