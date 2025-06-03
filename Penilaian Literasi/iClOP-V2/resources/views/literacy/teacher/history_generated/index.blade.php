@@ -386,6 +386,7 @@
                                     <tr>
                                         <th>No</th>
                                         {{-- <th>Hasil Generate</th> --}}
+                                        <th>Judul Materi</th>
                                         <th>Tipe Soal</th>
                                         <th>Jumlah Soal</th>
                                         <th>Aksi</th>
@@ -396,6 +397,9 @@
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             {{-- <td>{{ $history_generated_text->generate_text }}</td> --}}
+                                            <td>
+                                                {{ $history_generated_text->material->title ?? '-' }}
+                                            </td>
                                             <td>
                                                 @if ($history_generated_text->question_type == 'multiple_choice')
                                                     Pilihan Ganda
