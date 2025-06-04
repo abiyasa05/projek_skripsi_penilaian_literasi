@@ -17,7 +17,7 @@ class LiteracyQuestionController extends Controller
 {
     public function questions()
     {
-        $questions = LiteracyQuestion::all();
+        $questions = LiteracyQuestion::orderBy('created_at', 'desc')->get();
         $materials = LiteracyMaterial::all();
         $users = User::all();
         return view('literacy.teacher.questions.index', [
@@ -29,7 +29,7 @@ class LiteracyQuestionController extends Controller
 
     public function show($id)
     {
-        $questions = LiteracyQuestion::findOrFail($id);
+        $questions = LiteracyQuestion::all();
         return view('literacy.teacher.questions.index', compact('questions'));
     }
 
@@ -41,7 +41,6 @@ class LiteracyQuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'material_id' => 'required|exists:materials,id',
             'question_text' => 'required|string',
             'type' => 'required|in:multiple_choice,essay',
         ]);
@@ -105,55 +104,80 @@ class LiteracyQuestionController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'material_id' => 'required|exists:materials,id',
-            'question_text' => 'required|string|max:255',
+            'question_text' => 'required|string',
             'type' => 'required|string|in:multiple_choice,essay',
             'essay_score' => 'nullable|integer|min:0|max:100',
             'essay_answer' => 'nullable|string',
+            'options' => 'nullable|array',
             'options.*.id' => 'nullable|exists:literacy_options,id',
-            'options.*.option_text' => 'required_if:type,multiple_choice|string|max:255',
-            'options.*.score' => 'nullable|integer|min:0',
+            'options.*.option_text' => 'required_if:type,multiple_choice|string',
+            'options.*.score' => 'nullable|integer|min:0|max:100',
             'options.*.is_correct' => 'nullable|boolean',
         ]);
 
-        $question = LiteracyQuestion::findOrFail($id);
-        $question->update([
-            'material_id' => $request->material_id, // Tambahkan material_id
-            'question_text' => $request->question_text,
-            'type' => $request->type,
-            'essay_score' => $request->type === 'essay' ? $request->essay_score : null,
-            'essay_answer' => $request->type === 'essay' ? $request->essay_answer : null,
-        ]);
+        DB::beginTransaction();
 
-        // Jika pertanyaan adalah pilihan ganda, kelola opsi jawaban
-        if ($request->type === 'multiple_choice' && $request->has('options')) {
-            $existingOptionIds = $question->options->pluck('id')->toArray();
-            $newOptionIds = collect($request->options)->pluck('id')->filter()->toArray();
+        try {
+            // Ambil data pertanyaan
+            $question = LiteracyQuestion::with('options')->findOrFail($id);
 
-            // Hapus opsi yang tidak ada di input baru
-            $optionsToDelete = array_diff($existingOptionIds, $newOptionIds);
-            LiteracyOption::whereIn('id', $optionsToDelete)->delete();
+            // Update pertanyaan
+            $question->update([
+                'question_text' => $request->question_text,
+                'type' => $request->type,
+                'essay_score' => $request->type === 'essay' ? $request->essay_score : null,
+                'essay_answer' => $request->type === 'essay' ? $request->essay_answer : null,
+            ]);
 
-            foreach ($request->options as $option) {
-                if (isset($option['id'])) {
-                    // Update opsi yang sudah ada
-                    LiteracyOption::where('id', $option['id'])->update([
-                        'option_text' => $option['option_text'],
-                        'score' => $option['score'] ?? 0,
-                        'is_correct' => isset($option['is_correct']) ? 1 : 0,
-                    ]);
-                } else {
-                    // Tambahkan opsi baru
-                    $question->options()->create([
-                        'option_text' => $option['option_text'],
-                        'score' => $option['score'] ?? 0,
-                        'is_correct' => isset($option['is_correct']) ? 1 : 0,
-                    ]);
+            // Hanya untuk multiple_choice: proses opsi
+            if ($request->type === 'multiple_choice' && $request->has('options')) {
+
+                // Ambil ulang options yang terbaru
+                $question->refresh()->load('options');
+
+                $existingOptionIds = $question->options->pluck('id')->toArray();
+                $requestOptionIds = collect($request->options)->pluck('id')->filter()->toArray();
+
+                // Hapus opsi yang tidak ada dalam request
+                $optionsToDelete = array_diff($existingOptionIds, $requestOptionIds);
+                if (!empty($optionsToDelete)) {
+                    LiteracyOption::whereIn('id', $optionsToDelete)->delete();
                 }
-            }
-        }
 
-        return redirect()->route('literacy_teacher_questions')->with('success', 'Pertanyaan berhasil diperbarui!');
+                // Proses insert/update opsi
+                foreach ($request->input('options', []) as $option) {
+                    $isCorrect = isset($option['is_correct']) && $option['is_correct'] ? 1 : 0;
+                    $score = isset($option['score']) ? intval($option['score']) : 0;
+                
+                    if (!empty($option['id'])) {
+                        // Update existing option
+                        $existingOption = LiteracyOption::find($option['id']);
+                        if ($existingOption) {
+                            $existingOption->update([
+                                'option_text' => $option['option_text'],
+                                'score' => $score,
+                                'is_correct' => $isCorrect,
+                            ]);
+                        }
+                    } else {
+                        // Create new option
+                        LiteracyOption::create([
+                            'question_id' => $question->id,
+                            'option_text' => $option['option_text'],
+                            'score' => $score,
+                            'is_correct' => $isCorrect,
+                        ]);
+                    }
+                }                
+            }
+
+            DB::commit();
+            return redirect()->route('literacy_teacher_questions')->with('success', 'Pertanyaan berhasil diperbarui!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Update Error:', ['message' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
     public function destroy($id)

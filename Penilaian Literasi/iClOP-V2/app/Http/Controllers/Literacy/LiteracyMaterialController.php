@@ -38,7 +38,7 @@ class LiteracyMaterialController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string',
             'description' => 'nullable|string',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048'
         ]);
@@ -70,9 +70,9 @@ class LiteracyMaterialController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'title' => 'required|string|max:255',
+            'title' => 'required|string',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:2048'
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,txt|max:2048'
         ]);
 
         $material = LiteracyMaterial::findOrFail($id);

@@ -46,9 +46,9 @@ class LiteracyUserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string',
             'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string',
             'role' => 'required|in:teacher,student',
         ]);
 
@@ -75,7 +75,7 @@ class LiteracyUserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:teacher,student',
         ]);
