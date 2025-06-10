@@ -207,7 +207,7 @@ class LiteracyGenerateQuestionsController extends Controller
         }
     }
 
-    public function generate_from_ai(Request $request)
+    public function generate_from_ai2(Request $request)
     {
         $request->validate([
             'material_id' => 'required|exists:literacy_materials,id',
@@ -293,6 +293,62 @@ class LiteracyGenerateQuestionsController extends Controller
 
             $response = Http::timeout(300)->asJson()->post('http://127.0.0.1:8001/generate-from-material/', [
                 'content' => $text,
+                'question_type' => $request->question_type,
+                'question_count' => (int) $request->question_count,
+            ]);
+
+            if ($response->successful()) {
+                $generatedText = LiteracyGeneratedText::create([
+                    'user_id' => Auth::id(),
+                    'material_id' => $request->material_id,
+                    'question_type' => $request->question_type,
+                    'generate_text' => $response->json()['generated_questions'],
+                    'question_count' => $request->question_count,
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'generated_questions' => $generatedText->generate_text
+                ]);
+            }
+
+            Log::error('FastAPI Error Response:', [
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menghasilkan soal dari model',
+                'response' => $response->json()
+            ], $response->status());
+
+        } catch (\Exception $e) {
+            Log::error('Generate Error:', ['error' => $e->getMessage()]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan internal: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function generate_from_ai(Request $request)
+    {
+        $request->validate([
+            'material_id' => 'required|exists:literacy_materials,id',
+            'question_type' => 'required|in:multiple_choice,essay',
+            'question_count' => 'required|integer|min:1|max:20',
+        ]);
+
+        try {
+            ini_set('max_execution_time', 300);
+
+            $material = LiteracyMaterial::findOrFail($request->material_id);
+            $relativePath = $material->file_path;
+
+            // Kirim permintaan ke FastAPI
+            $response = Http::timeout(300)->asJson()->post('http://127.0.0.1:8010/generate-from-file/', [
+                'file_name' => $relativePath,
                 'question_type' => $request->question_type,
                 'question_count' => (int) $request->question_count,
             ]);
