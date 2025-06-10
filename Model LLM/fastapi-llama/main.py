@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os, logging, httpx, hashlib
 from utils_file import read_text_from_file
+from pathlib import Path
 
 # Logging setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -18,8 +19,11 @@ app.add_middleware(
 )
 
 # Path lokal file materi
-MATERIAL_BASE_PATH = r"D:\Projek Skripsi\Penilaian Literasi\iClOP-V2\storage\app\public"
+BASE_DIR = Path(__file__).resolve().parent
+MATERIAL_BASE_PATH = (BASE_DIR.parent.parent / "Penilaian Literasi" / "iCLOP-V2" / "storage" / "app" / "public")
 OLLAMA_URL = "http://labai.polinema.ac.id:11434/api/generate"
+
+logging.info(f"📂 Path materi: {MATERIAL_BASE_PATH}")
 
 # Request model
 class FileMaterialRequest(BaseModel):
