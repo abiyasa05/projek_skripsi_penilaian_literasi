@@ -72,7 +72,7 @@ class LiteracyMaterialController extends Controller
         $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx,txt|max:2048'
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,txt|max:1048576'
         ]);
 
         $material = LiteracyMaterial::findOrFail($id);
