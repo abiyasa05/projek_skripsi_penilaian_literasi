@@ -431,6 +431,26 @@
                             class="mt-4">
                             @csrf
 
+                            <!-- Pilihan Materi -->
+                            <div class="mb-3">
+                                <label for="material_id" class="form-label">Materi</label>
+                                <select name="material_id" class="form-control" id="materialSelect" required>
+                                    <option value="">Pilih Materi</option>
+                                    @foreach ($materials as $material)
+                                        <option value="{{ $material->id }}">{{ $material->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Pilihan Teks Bacaan -->
+                            <div class="mb-3">
+                                <label for="story_text_display" class="form-label">Teks Bacaan</label>
+                                <textarea id="story_text_display" class="form-control" rows="6" readonly></textarea>
+                                <input type="hidden" name="story_text_id" id="story_text_id">
+                                <button type="button" class="btn btn-secondary mt-2" id="btnPilihTeks">Pilih Teks
+                                    Bacaan</button>
+                            </div>
+
                             <!-- Teks Pertanyaan -->
                             <div class="mb-3">
                                 <label for="question_text" class="form-label">Teks Pertanyaan</label>
@@ -478,6 +498,175 @@
             </main>
         </div>
     </div>
+
+    <!-- Modal Pilih Teks Bacaan -->
+    <div class="modal fade" id="modalPilihTeks" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Pilih Teks Bacaan</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body" id="listTeksBacaan">
+                    <p>Memuat teks bacaan...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const materialSelect = document.getElementById("materialSelect");
+            const storyTextDisplay = document.getElementById("story_text_display");
+            const storyTextIdInput = document.getElementById("story_text_id");
+            const btnPilihTeks = document.getElementById("btnPilihTeks");
+            const listTeksBacaan = document.getElementById("listTeksBacaan");
+
+            const questionType = document.getElementById("questionType");
+            const answerOptions = document.getElementById("answerOptions");
+            const addOptionBtn = document.getElementById("addOption");
+            const essayScore = document.getElementById("essay_score");
+            const essayAnswer = document.getElementById("essay_answer");
+            const saveButton = document.getElementById("saveButton");
+            const multipleChoiceOptions = document.getElementById("multipleChoiceOptions");
+            const essayScoreField = document.getElementById("essayScoreField");
+            const essayReferenceAnswerField = document.getElementById("essayReferenceAnswerField");
+
+            btnPilihTeks.addEventListener("click", function () {
+                const materialId = materialSelect.value;
+                if (!materialId) {
+                    alert("Pilih materi terlebih dahulu.");
+                    return;
+                }
+
+                listTeksBacaan.innerHTML = "<p>Memuat teks bacaan...</p>";
+                $('#modalPilihTeks').modal('show');
+
+                fetch(`/literacy/teacher/materials/${materialId}/story-texts`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            listTeksBacaan.innerHTML = "<p>Tidak ada teks bacaan.</p>";
+                            return;
+                        }
+
+                        listTeksBacaan.innerHTML = "";
+                        data.forEach(text => {
+                            const div = document.createElement("div");
+                            div.classList.add("mb-3", "p-2", "border", "rounded");
+                            div.innerHTML = `
+                                <div style="max-height: 150px; overflow-y: auto; white-space: pre-wrap;">${text.story_text}</div>
+                                <button type="button" class="btn btn-sm btn-primary mt-2 pilih-teks" 
+                                    data-id="${text.id}" 
+                                    data-teks="${text.story_text.replace(/"/g, '&quot;')}">
+                                    Pilih Teks Ini
+                                </button>
+                            `;
+                            listTeksBacaan.appendChild(div);
+                        });
+
+                        document.querySelectorAll(".pilih-teks").forEach(btn => {
+                            btn.addEventListener("click", function () {
+                                const id = this.getAttribute("data-id");
+                                const teks = this.getAttribute("data-teks");
+
+                                storyTextDisplay.textContent = teks;
+                                storyTextIdInput.value = id;
+
+                                $('#modalPilihTeks').modal('hide');
+                            });
+                        });
+                    });
+            });
+
+            function toggleFields() {
+                const isMultipleChoice = questionType.value === "multiple_choice";
+
+                if (isMultipleChoice) {
+                    multipleChoiceOptions.style.display = "block";
+                    essayScoreField.style.display = "none";
+                    essayReferenceAnswerField.style.display = "none";
+
+                    essayScore.removeAttribute("required");
+                    essayAnswer.removeAttribute("required");
+
+                    document.querySelectorAll(".option-text, .option-score").forEach(input => {
+                        input.setAttribute("required", "required");
+                    });
+
+                    if (answerOptions.children.length === 0) addNewOption();
+                } else {
+                    multipleChoiceOptions.style.display = "none";
+                    essayScoreField.style.display = "block";
+                    essayReferenceAnswerField.style.display = "block";
+
+                    essayScore.setAttribute("required", "required");
+                    essayAnswer.setAttribute("required", "required");
+
+                    document.querySelectorAll(".option-text, .option-score").forEach(input => {
+                        input.removeAttribute("required");
+                    });
+                }
+
+                validateForm();
+            }
+
+            function addNewOption() {
+                let optionsCount = document.querySelectorAll(".option-group").length;
+                let div = document.createElement("div");
+                div.classList.add("option-group", "mb-2", "d-flex", "align-items-center", "gap-2");
+                div.innerHTML = `
+                    <input type="text" name="options[${optionsCount}][text]" class="form-control option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
+                    <input type="number" name="options[${optionsCount}][score]" class="form-control option-score" style="width: 20%;" placeholder="Skor" min="0" max="100" required>
+                    <label class="d-flex align-items-center ms-2">
+                        <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="correct-answer me-1">
+                        <span>Benar</span>
+                    </label>
+                    <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
+                `;
+                answerOptions.appendChild(div);
+
+                div.querySelector(".remove-option").addEventListener("click", function () {
+                    div.remove();
+                    updateOptionIndexes();
+                    validateForm();
+                });
+            }
+
+            function updateOptionIndexes() {
+                document.querySelectorAll(".option-group").forEach((option, index) => {
+                    option.querySelector(".option-text").name = `options[${index}][text]`;
+                    option.querySelector(".option-score").name = `options[${index}][score]`;
+                    option.querySelector(".correct-answer").name = `options[${index}][is_correct]`;
+                    option.querySelector(".option-text").placeholder = `Opsi ${index + 1}`;
+                });
+            }
+
+            function validateForm() {
+                let isValid = false;
+
+                if (questionType.value === "multiple_choice") {
+                    let options = document.querySelectorAll(".option-text");
+                    let scores = document.querySelectorAll(".option-score");
+                    let checkedCorrect = document.querySelector(".correct-answer:checked");
+
+                    isValid = options.length > 0 && scores.length > 0 && checkedCorrect;
+                } else {
+                    isValid = essayScore.value.trim() !== "" && essayAnswer.value.trim() !== "";
+                }
+
+                saveButton.disabled = !isValid;
+            }
+
+            questionType.addEventListener("change", toggleFields);
+            addOptionBtn.addEventListener("click", addNewOption);
+            essayScore.addEventListener("input", validateForm);
+            essayAnswer.addEventListener("input", validateForm);
+            answerOptions.addEventListener("input", validateForm);
+
+            toggleFields();
+        });
+    </script>
 
     <script>
         document.getElementById('toggleSidebar').addEventListener('click', function () {
@@ -537,162 +726,6 @@
             resetButton.addEventListener('click', function () {
                 contentElement.innerText = 'Hasil generate soal akan muncul di sini...';
             });
-        });
-    </script>
-
-    {{--
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const aiForm = document.getElementById('aiForm');
-            const contentElement = document.getElementById('content');
-            const resetButton = document.getElementById('resetButton');
-            const generateButton = aiForm.querySelector('button[type="submit"]'); // Get the Generate button
-
-            // Function to send the content to the server and get generated questions
-            aiForm.addEventListener('submit', async function (event) {
-                event.preventDefault();  // Prevent the form from submitting normally
-
-                let content = contentElement.innerText.trim();  // Get the content entered by the user
-
-                if (content === "") {
-                    content = "Buatlah soal literasi berdasarkan teks anak-anak tentang lingkungan.";
-                }
-
-                contentElement.innerText = "Menghasilkan pertanyaan..."; // Display "Menghasilkan pertanyaan..."
-
-                try {
-                    let response = await fetch("{{ route('literacy_teacher_generate_from_ai') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": '{{ csrf_token() }}',
-                        },
-                        body: JSON.stringify({ content: content })
-                    });
-
-                    let data = await response.json();
-
-                    if (response.ok) {
-                        contentElement.innerText = data.generated_questions || "Soal berhasil dibuat, tapi tidak ada data.";
-                    } else {
-                        contentElement.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
-                    }
-
-                } catch (error) {
-                    contentElement.innerText = "Gagal menghubungi server!";
-                    console.error("Error:", error);
-                }
-            });
-
-            // Reset the content editable area when reset button is clicked
-            resetButton.addEventListener('click', function () {
-                contentElement.innerText = '';  // Clear the content
-            });
-        });
-    </script> --}}
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const questionType = document.getElementById("questionType");
-            const multipleChoiceOptions = document.getElementById("multipleChoiceOptions");
-            const answerOptions = document.getElementById("answerOptions");
-            const addOptionBtn = document.getElementById("addOption");
-            const essayScoreField = document.getElementById("essayScoreField");
-            const essayReferenceAnswerField = document.getElementById("essayReferenceAnswerField");
-            const saveButton = document.getElementById("saveButton");
-            const essayScore = document.getElementById("essay_score");
-            const essayAnswer = document.getElementById("essay_answer");
-            const questionForm = document.getElementById("questionForm");
-
-            function toggleFields() {
-                if (questionType.value === "multiple_choice") {
-                    multipleChoiceOptions.style.display = "block";
-                    essayScoreField.style.display = "none";
-                    essayReferenceAnswerField.style.display = "none";
-
-                    essayScore.removeAttribute("required");
-                    essayAnswer.removeAttribute("required");
-
-                    document.querySelectorAll(".option-text, .option-score").forEach(input => {
-                        input.setAttribute("required", "required");
-                    });
-
-                    // Tambahkan minimal 1 opsi jika belum ada
-                    if (answerOptions.children.length === 0) {
-                        addNewOption();
-                    }
-                } else {
-                    multipleChoiceOptions.style.display = "none";
-                    essayScoreField.style.display = "block";
-                    essayReferenceAnswerField.style.display = "block";
-
-                    essayScore.setAttribute("required", "required");
-                    essayAnswer.setAttribute("required", "required");
-
-                    document.querySelectorAll(".option-text, .option-score").forEach(input => {
-                        input.removeAttribute("required");
-                    });
-                }
-
-                validateForm();
-            }
-
-            function addNewOption() {
-                let optionsCount = document.querySelectorAll(".option-group").length;
-                let div = document.createElement("div");
-                div.classList.add("option-group", "mb-2", "d-flex", "align-items-center");
-                div.innerHTML = `
-                    <input type="text" name="options[${optionsCount}][text]" class="form-control me-2 option-text" style="width: 40%;" placeholder="Opsi ${optionsCount + 1}" required>
-                    <input type="number" name="options[${optionsCount}][score]" class="form-control me-2 option-score" style="width: 40%;" placeholder="Skor" min="0" max="100" required>
-                    <input type="checkbox" name="options[${optionsCount}][is_correct]" value="1" class="ms-2 correct-answer">
-                    <span class="ms-1">Jawaban Benar</span>
-                    <button type="button" class="btn btn-danger btn-sm ms-2 remove-option">X</button>
-                `;
-                answerOptions.appendChild(div);
-
-                div.querySelector(".remove-option").addEventListener("click", function () {
-                    div.remove();
-                    updateOptionIndexes();
-                    validateForm();
-                });
-
-                updateOptionIndexes();
-                validateForm();
-            }
-
-            function updateOptionIndexes() {
-                document.querySelectorAll(".option-group").forEach((option, index) => {
-                    option.querySelector(".option-text").name = `options[${index}][text]`;
-                    option.querySelector(".option-score").name = `options[${index}][score]`;
-                    option.querySelector(".correct-answer").name = `options[${index}][is_correct]`;
-                    option.querySelector(".option-text").placeholder = `Opsi ${index + 1}`;
-                });
-            }
-
-            function validateForm() {
-                let isValid = false;
-
-                if (questionType.value === "multiple_choice") {
-                    let options = document.querySelectorAll(".option-text");
-                    let scores = document.querySelectorAll(".option-score");
-                    let checkedCorrect = document.querySelector(".correct-answer:checked");
-
-                    isValid = options.length > 0 && scores.length > 0 && checkedCorrect;
-                } else {
-                    isValid = essayScore.value.trim() !== "" && essayAnswer.value.trim() !== "";
-                }
-
-                saveButton.disabled = !isValid;
-                // questionForm.reportValidity();
-            }
-
-            questionType.addEventListener("change", toggleFields);
-            addOptionBtn.addEventListener("click", addNewOption);
-            essayScore.addEventListener("input", validateForm);
-            essayAnswer.addEventListener("input", validateForm);
-            answerOptions.addEventListener("input", validateForm);
-
-            toggleFields();
         });
     </script>
 
