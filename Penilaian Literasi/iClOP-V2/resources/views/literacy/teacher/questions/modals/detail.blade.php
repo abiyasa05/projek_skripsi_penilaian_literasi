@@ -6,7 +6,7 @@
                 <h5 class="modal-title">Detail Pertanyaan</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                 <!-- Materi -->
                 <div class="mb-3">
                     <label class="form-label">Materi:</label>

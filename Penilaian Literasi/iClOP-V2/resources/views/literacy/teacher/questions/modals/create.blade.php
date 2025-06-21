@@ -6,9 +6,9 @@
                 <h5 class="modal-title">Tambah Pertanyaan</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-            <form action="{{ route('literacy_questions_store') }}" method="POST" id="createQuestionForm">
+            <form action="{{ route('literacy_questions_store') }}" method="POST">
                 @csrf
-                <div class="modal-body">
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
                     <!-- Pilihan Materi -->
                     <div class="mb-3">
                         <label for="material_id" class="form-label">Materi</label>
