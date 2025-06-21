@@ -362,124 +362,126 @@
             <!-- CONTENT DAN NAVIGASI SOAL -->
             @php
                 use Illuminate\Support\Str;
-                $multipleChoiceQuestions = $questions->filter(fn($q) => $q->options->isNotEmpty());
-                $essayQuestions = $questions->filter(fn($q) => $q->options->isEmpty());
-                $multipleChoiceNumber = 0;
-                $essayNumber = 0;
+                $questionsByMaterial = $questions->groupBy('material_id');
             @endphp
 
             <main class="col-md-8">
                 <div class="grid grid-cols-12 gap-6 p-6">
                     <div class="col-span-12 lg:col-span-9 space-y-4">
-                        <!-- Bagian Pilihan Ganda -->
-                        @if ($multipleChoiceQuestions->isNotEmpty())
-                            <div class="row mt-4">
-                                <div class="col-12 d-flex justify-content-between align-items-center">
-                                    <h4 class="text-base font-semibold mb-2">Bagian 1: Pilihan Ganda</h4>
-                                    <button onclick="window.close()" class="btn btn-outline-secondary btn-sm">Kembali</button>
+
+                        {{-- ===================== PILIHAN GANDA ===================== --}}
+                        <h4 class="text-lg font-semibold mb-2">Soal Pilihan Ganda</h4>
+                        @php $mcGlobalNumber = 0; @endphp
+                        @foreach ($questionsByMaterial as $materialId => $materialQuestions)
+                            @php
+                                $material = $materialQuestions->first()->material;
+                                $storyTexts = $material->storyTexts ?? collect();
+                                $multipleChoiceQuestions = $materialQuestions->where('type', 'multiple_choice');
+                            @endphp
+
+                            @if ($multipleChoiceQuestions->isNotEmpty())
+                                <div class="mb-4">
+                                    <h5 class="font-semibold">Teks Bacaan: {{ $material->title }}</h5>
+                                    @foreach ($storyTexts as $text)
+                                        <div class="bg-gray-100 p-3 rounded mb-2">{{ $text->story_text }}</div>
+                                    @endforeach
                                 </div>
-                            </div>
-                            <p class="text-gray-500 text-sm mb-3">Pilih salah satu jawaban yang paling tepat.</p>
 
-                            @foreach ($multipleChoiceQuestions as $question)
-                                @php 
-                                    $multipleChoiceNumber++; 
-                                    $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
-                                    $kutipan = null;
-                                    $pertanyaanBersih = $question->question_text;
+                                @foreach ($multipleChoiceQuestions as $index => $question)
+                                    @php
+                                        $mcGlobalNumber++;
+                                        $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
+                                        $kutipan = null;
+                                        $pertanyaanBersih = $question->question_text;
 
-                                    // Deteksi apakah soal memuat kutipan atau paragraf
-                                    if (Str::contains($question->question_text, 'Bacalah')) {
-                                        preg_match('/Bacalah (kutipan|paragraf) berikut:\s*"(.*?)"\s*(.*)/s', $question->question_text, $matches);
-                                        if (count($matches) >= 4) {
-                                            $kutipan = trim($matches[2]);
-                                            $pertanyaanBersih = trim($matches[3]);
+                                        if (Str::contains($question->question_text, 'Bacalah')) {
+                                            preg_match('/Bacalah (kutipan|paragraf) berikut:\s*\"(.*?)\"\s*(.*)/s', $question->question_text, $matches);
+                                            if (count($matches) >= 4) {
+                                                $kutipan = trim($matches[2]);
+                                                $pertanyaanBersih = trim($matches[3]);
+                                            }
                                         }
-                                    }
-                                @endphp
+                                    @endphp
 
-                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-mc-{{ $multipleChoiceNumber }}">
-                                    <div class="row">
-                                        <!-- Kolom Nomor Soal -->
-                                        <div class="col-auto d-flex justify-content-start align-items-start pt-2">
-                                            <strong>{{ $multipleChoiceNumber }}.</strong>
+                                    <div id="question-mc-{{ $mcGlobalNumber }}" class="bg-white shadow-md rounded-lg p-4 border mb-4">
+                                        <div class="row">
+                                            <div class="col-auto d-flex justify-content-start align-items-start pt-2">
+                                                <strong>{{ $mcGlobalNumber }}.</strong>
+                                            </div>
+                                            <div class="col">
+                                                @if ($kutipan)
+                                                    <p class="mb-0 mt-2"><strong>Bacalah kutipan berikut:</strong></p>
+                                                    <div class="ps-3 pe-3">
+                                                        <em>"{{ $kutipan }}"</em>
+                                                    </div>
+                                                @endif
+                                                <p class="mt-2 mb-0">{{ $pertanyaanBersih }}</p>
+                                            </div>
                                         </div>
-                                        <!-- Kolom Isi Soal -->
-                                        <div class="col">
-                                            @if ($kutipan)
-                                                <p class="mb-0 mt-2"><strong>Bacalah kutipan berikut:</strong></p>
-                                                <div class="ps-3 pe-3">
-                                                    <em>"{{ $kutipan }}"</em>
-                                                </div>
-                                            @endif
-                                            <p class="mt-2 mb-0">{{ $pertanyaanBersih }}</p>
+
+                                        <div class="mt-3">
+                                            <div class="space-y-3">
+                                                @foreach ($question->options as $option)
+                                                    <label class="d-block p-3 border rounded-sm cursor-pointer w-100">
+                                                        <input type="radio" name="question_{{ $question->id }}"
+                                                            value="{{ $option->id }}" class="form-radio"
+                                                            onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}'); updateQuestionUI('mc', '{{ $question->id }}');"
+                                                            {{ $savedAnswer && $savedAnswer->option_id == $option->id ? 'checked' : '' }}>
+                                                        <span>{{ $option->option_text }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
+                                @endforeach
+                            @endif
+                        @endforeach
 
-                                    <div class="mt-3">
-                                        <div class="space-y-3">
-                                            @foreach ($question->options as $option)
-                                                <label class="d-block p-3 border rounded-sm cursor-pointer w-100">
-                                                    <input type="radio" name="question_{{ $question->id }}" 
-                                                        value="{{ $option->id }}" class="form-radio"
-                                                        onchange="saveAnswer('{{ $question->id }}', '{{ $option->id }}'); updateQuestionUI('mc', '{{ $question->id }}');"
-                                                        {{ $savedAnswer && $savedAnswer->option_id == $option->id ? 'checked' : '' }}>
-                                                    <span>{{ $option->option_text }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    </div>
+                        {{-- ===================== ISIAN / ESSAY ===================== --}}
+                        <h4 class="text-lg font-semibold mt-6 mb-2">Soal Isian</h4>
+                        @php $essayGlobalNumber = 0; @endphp
+                        @foreach ($questionsByMaterial as $materialId => $materialQuestions)
+                            @php
+                                $material = $materialQuestions->first()->material;
+                                $storyTexts = $material->storyTexts ?? collect();
+                                $essayQuestions = $materialQuestions->where('type', 'essay');
+                            @endphp
+
+                            @if ($essayQuestions->isNotEmpty())
+                                <div class="mb-4">
+                                    <h5 class="font-semibold">Teks Bacaan: {{ $material->title }}</h5>
+                                    @foreach ($storyTexts as $text)
+                                        <div class="bg-gray-100 p-3 rounded mb-2">{{ $text->story_text }}</div>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        @endif
 
-                        <!-- Bagian Isian / Essay -->
-                        @if ($essayQuestions->isNotEmpty())
-                            <h4 class="text-base font-semibold mt-4">Bagian 2: Isian</h4>
-                            <p class="text-gray-500 text-sm mb-3">Jawablah pertanyaan berikut dengan jawaban yang sesuai.</p>
+                                @foreach ($essayQuestions as $index => $question)
+                                    @php
+                                        $essayGlobalNumber++;
+                                        $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
+                                    @endphp
 
-                            @foreach ($essayQuestions as $question)
-                                @php 
-                                    $essayNumber++; 
-                                    $savedAnswer = optional($question->answers->where('assessment_id', $assessment->id)->first());
-                                    $kutipan = null;
-                                    $pertanyaanBersih = $question->question_text;
-
-                                    if (Str::contains($question->question_text, 'Bacalah')) {
-                                        preg_match('/Bacalah (kutipan|paragraf) berikut:\s*"(.*?)"\s*(.*)/s', $question->question_text, $matches);
-                                        if (count($matches) >= 4) {
-                                            $kutipan = trim($matches[2]);
-                                            $pertanyaanBersih = trim($matches[3]);
-                                        }
-                                    }
-                                @endphp
-
-                                <div class="bg-white shadow-md rounded-lg p-4 border mb-4" id="question-essay-{{ $essayNumber }}">
-                                    <div class="row">
-                                        <!-- Kolom Nomor Soal -->
-                                        <div class="col-auto d-flex justify-content-start align-items-start pt-2">
-                                            <strong>{{ $essayNumber }}.</strong>
+                                    <div id="question-essay-{{ $essayGlobalNumber }}" class="bg-white shadow-md rounded-lg p-4 border mb-4">
+                                        <div class="row">
+                                            <div class="col-auto d-flex justify-content-start align-items-start pt-2">
+                                                <strong>{{ $essayGlobalNumber }}.</strong>
+                                            </div>
+                                            <div class="col">
+                                                <p class="mt-2 mb-0">{{ $question->question_text }}</p>
+                                            </div>
                                         </div>
-                                        <!-- Kolom Isi Soal -->
-                                        <div class="col">
-                                            @if ($kutipan)
-                                                <p class="mb-0 mt-2"><strong>Bacalah kutipan berikut:</strong></p>
-                                                <div class="ps-3 pe-3">
-                                                    <em>"{{ $kutipan }}"</em>
-                                                </div>
-                                            @endif
-                                            <p class="mt-2 mb-0">{{ $pertanyaanBersih }}</p>
+
+                                        <div class="mt-3">
+                                            <textarea name="question_{{ $question->id }}"
+                                                class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200"
+                                                placeholder="Masukkan jawaban Anda di sini..."
+                                                oninput="saveEssayAnswerDebounced('{{ $question->id }}', this.value); updateQuestionUI('essay', '{{ $question->id }}');">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
                                         </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <textarea name="question_{{ $question->id }}"
-                                            class="w-100 h-24 p-3 border rounded-lg focus:ring focus:ring-blue-200"
-                                            placeholder="Masukkan jawaban Anda di sini..."
-                                            oninput="saveEssayAnswerDebounced('{{ $question->id }}', this.value); updateQuestionUI('essay', '{{ $question->id }}');">{{ $savedAnswer ? $savedAnswer->answer_text : '' }}</textarea>
-                                    </div>
-                                </div>
-                            @endforeach
-                        @endif
+                                @endforeach
+                            @endif
+                        @endforeach
+
                     </div>
                 </div>
             </main>
@@ -654,27 +656,25 @@
         function checkUnansweredQuestions() {
             let unansweredCount = 0;
 
-            // Cek soal pilihan ganda (radio button)
-            @foreach ($multipleChoiceQuestions as $question)
-                if (!$("input[name='question_{{ $question->id }}']:checked").val()) {
-                    unansweredCount++;
-                }
+            @foreach ($questions as $question)
+                @if ($question->type === 'multiple_choice')
+                    if (!$("input[name='question_{{ $question->id }}']:checked").val()) {
+                        unansweredCount++;
+                    }
+                @elseif ($question->type === 'essay')
+                    if (!$("textarea[name='question_{{ $question->id }}']").val().trim()) {
+                        unansweredCount++;
+                    }
+                @endif
             @endforeach
 
-            // Cek soal isian (textarea)
-            @foreach ($essayQuestions as $question)
-                if (!$("textarea[name='question_{{ $question->id }}']").val().trim()) {
-                    unansweredCount++;
-                }
-            @endforeach
-
-            console.log("Soal yang belum dijawab:", unansweredCount); // Debugging
+            console.log("Soal yang belum dijawab:", unansweredCount);
 
             if (unansweredCount > 0) {
                 $("#unansweredCount").text(unansweredCount);
-                $("#unansweredWarningModal").modal("show"); // Tampilkan modal peringatan
+                $("#unansweredWarningModal").modal("show");
             } else {
-                $("#confirmSubmitModal").modal("show"); // Tampilkan modal konfirmasi
+                $("#confirmSubmitModal").modal("show");
             }
         }
     </script>
@@ -705,15 +705,6 @@
                 console.error("Gagal menyimpan jawaban:", error);
             }
         }
-
-        // function updateNavigationButton(questionId) {
-        //     const navButton = document.querySelector(`button[data-question-id='${questionId}']`);
-
-        //     if (navButton) {
-        //         navButton.classList.remove("btn-outline-secondary");
-        //         navButton.classList.add("btn-primary", "border-white");
-        //     }
-        // }
     </script>
 
     <script>
