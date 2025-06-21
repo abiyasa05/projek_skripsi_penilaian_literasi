@@ -1,6 +1,6 @@
 <!-- Modal Edit Pertanyaan -->
 <div class="modal fade" id="modalEditPertanyaan{{ $question->id }}" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Edit Pertanyaan</h5>
@@ -9,27 +9,44 @@
             <form action="{{ route('literacy_questions_update', $question->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                <input type="hidden" name="question_id" value="{{ $question->id }}">
 
-                <div class="modal-body">
-                    <!-- Teks Pertanyaan -->
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Materi -->
                     <div class="mb-3">
-                        <label for="edit_question_text" class="form-label">Pertanyaan</label>
-                        <textarea name="question_text" class="form-control"
-                            required>{{ $question->question_text }}</textarea>
+                        <label class="form-label">Materi:</label>
+                        <div class="form-control bg-light">
+                            {{ $question->material->title ?? '-' }}
+                        </div>
+                    </div>
+
+                    <!-- Story Text -->
+                    <div class="mb-3">
+                        <label class="form-label">Teks Bacaan:</label>
+                        <textarea class="form-control bg-light" readonly rows="5" style="resize: none">
+                            {{ $question->first_story_text->story_text ?? '-' }}
+                        </textarea>
+                    </div>
+
+                    <!-- Pertanyaan -->
+                    <div class="mb-3">
+                        <label class="form-label">Pertanyaan</label>
+                        <textarea name="question_text" class="form-control" required>{{ $question->question_text }}</textarea>
                     </div>
 
                     <!-- Tipe Pertanyaan -->
                     <div class="mb-3">
-                        <label for="edit_questionType" class="form-label">Tipe Pertanyaan</label>
+                        <label class="form-label">Tipe Pertanyaan</label>
                         <select name="type" class="form-control edit_questionType" required>
                             <option value="multiple_choice" {{ $question->type == 'multiple_choice' ? 'selected' : '' }}>
-                                Pilihan Ganda</option>
-                            <option value="essay" {{ $question->type == 'essay' ? 'selected' : '' }}>Isian</option>
+                                Pilihan Ganda
+                            </option>
+                            <option value="essay" {{ $question->type == 'essay' ? 'selected' : '' }}>
+                                Isian
+                            </option>
                         </select>
                     </div>
 
-                    <!-- Opsi Jawaban -->
+                    <!-- Opsi Pilihan Ganda -->
                     <div class="mb-3 edit_multipleChoiceOptions"
                         style="display: {{ $question->type == 'multiple_choice' ? 'block' : 'none' }};">
                         <label class="form-label">Opsi Jawaban</label>
@@ -44,7 +61,6 @@
                                     <input type="number" name="options[{{ $index }}][score]" class="form-control"
                                         style="width: 15%;" value="{{ $option->score }}" min="0" max="100" required>
 
-                                    <!-- Tambahkan margin kiri agar checkbox lebih rata -->
                                     <label class="d-flex align-items-center ms-3">
                                         <input type="checkbox" name="options[{{ $index }}][is_correct]" value="1"
                                             class="me-2" {{ $option->is_correct ? 'checked' : '' }}>
@@ -58,19 +74,18 @@
                         <button type="button" class="btn btn-success btn-sm addOption">+ Tambah Opsi</button>
                     </div>
 
-                    <!-- Skor untuk pertanyaan Isian -->
+                    <!-- Isian -->
                     <div id="edit_essayScoreField" class="mb-3"
                         style="display: {{ $question->type == 'essay' ? 'block' : 'none' }};">
-                        <label for="edit_essay_score" class="form-label">Skor untuk Isian</label>
-                        <input type="number" name="essay_score" id="edit_essay_score" class="form-control" min="0"
-                            max="100" value="{{ $question->essay_score ?? '' }}" placeholder="Masukkan skor">
+                        <label class="form-label">Skor untuk Isian</label>
+                        <input type="number" name="essay_score" class="form-control" min="0" max="100"
+                            value="{{ $question->essay_score ?? '' }}" placeholder="Masukkan skor">
                     </div>
 
-                    <!-- Jawaban untuk Isian -->
                     <div id="edit_essayReferenceAnswerField" class="mb-3"
                         style="display: {{ $question->type == 'essay' ? 'block' : 'none' }};">
-                        <label for="edit_essay_answer" class="form-label">Jawaban Isian</label>
-                        <textarea name="essay_answer" id="edit_essay_answer" class="form-control"
+                        <label class="form-label">Jawaban Referensi</label>
+                        <textarea name="essay_answer" class="form-control"
                             placeholder="Masukkan jawaban referensi">{{ $question->essay_answer ?? '' }}</textarea>
                     </div>
                 </div>

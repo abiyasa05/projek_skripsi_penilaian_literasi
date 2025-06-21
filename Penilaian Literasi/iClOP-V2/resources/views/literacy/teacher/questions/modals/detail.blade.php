@@ -1,25 +1,44 @@
 <!-- Modal Detail Pertanyaan -->
 <div class="modal fade" id="detailPertanyaanModal{{ $question->id }}" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Detail Pertanyaan</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
+                <!-- Materi -->
+                <div class="mb-3">
+                    <label class="form-label">Materi:</label>
+                    <div class="form-control bg-light">
+                        {{ $question->material->title ?? '-' }}
+                    </div>
+                </div>
+
+                <!-- Story Text -->
+                <div class="mb-3">
+                    <label class="form-label">Teks Bacaan:</label>
+                    <textarea class="form-control bg-light" readonly rows="5" style="resize: none">
+                        {{ $question->first_story_text->story_text ?? '-' }}
+                    </textarea>
+                </div>
+
+                <!-- Teks Pertanyaan -->
                 <div class="mb-3">
                     <label class="form-label">Pertanyaan:</label>
                     <textarea class="form-control bg-light" readonly
                         style="height: 150px !important; overflow-y: auto !important; resize: none !important;">{{ $question->question_text }}</textarea>
-                    </textarea>
                 </div>
+
+                <!-- Tipe Pertanyaan -->
                 <div class="mb-3">
                     <label class="form-label">Tipe Pertanyaan:</label>
                     <div class="form-control bg-light">
                         {{ $question->type == 'multiple_choice' ? 'Pilihan Ganda' : 'Isian' }}
                     </div>
                 </div>
-                <!-- Menampilkan Opsi Jawaban jika tipe pertanyaan Pilihan Ganda -->
+
+                <!-- Opsi atau Jawaban -->
                 @if($question->type == 'multiple_choice')
                     <div class="mb-3">
                         <label class="form-label">Opsi Jawaban:</label>
@@ -40,8 +59,7 @@
                 @else
                     <div class="mb-3">
                         <label class="form-label">Jawaban Isian:</label>
-                        <textarea class="form-control bg-light" rows="5"
-                            readonly>{{ $question->essay_answer ?? '-' }}</textarea>
+                        <textarea class="form-control bg-light" rows="5" readonly>{{ $question->essay_answer ?? '-' }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Skor:</label>

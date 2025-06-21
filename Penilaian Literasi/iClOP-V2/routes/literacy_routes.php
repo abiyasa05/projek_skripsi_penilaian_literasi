@@ -94,6 +94,8 @@ Route::group(['middleware' => ['auth', 'teacher']], function () {
 
         Route::get('/questions', [LiteracyQuestionController::class, 'questions'])->name('literacy_teacher_questions');
 
+        Route::get('/materials/{id}/story-texts', [LiteracyMaterialController::class, 'getStoryTexts']);
+
         Route::get('/questions/{id}/detail', [LiteracyQuestionController::class, 'show'])->name('literacy_users_detail');
 
         Route::get('/questions/create', [LiteracyQuestionController::class, 'create'])
