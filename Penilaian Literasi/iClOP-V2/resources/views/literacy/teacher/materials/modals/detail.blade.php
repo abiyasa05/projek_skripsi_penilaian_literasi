@@ -1,6 +1,6 @@
 <div class="modal fade" id="detailMateriModal{{ $material->id }}" tabindex="-1" role="dialog"
     aria-labelledby="detailMateriLabel{{ $material->id }}" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="detailMateriLabel{{ $material->id }}">Detail Materi</h5>
@@ -11,6 +11,20 @@
                     <label class="form-label">Judul:</label>
                     <textarea class="form-control bg-light" rows="2" readonly
                         style="resize: none; overflow: auto;">{{ $material->title }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teks Cerita:</label>
+                    @if ($material->storyTexts->isEmpty())
+                        <div class="form-control bg-light">-</div>
+                    @else
+                        @foreach ($material->storyTexts as $index => $story)
+                            <div class="mb-2">
+                                <label class="form-label">Cerita {{ $index + 1 }}:</label>
+                                <textarea class="form-control bg-light" rows="3" readonly
+                                    style="resize: none; overflow: auto;">{{ $story->story_text }}</textarea>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Deskripsi:</label>

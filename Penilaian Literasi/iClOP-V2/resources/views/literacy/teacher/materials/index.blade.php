@@ -434,40 +434,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="settings" class="content" style="display: none;">
-                    <h1>Settings</h1>
-                    <p>Possible account settings
-                        needed<br>during the learning process</p>
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/profile.png" alt="Image 1" class="circle-image">
-                                    <h2 class="custom-title">My Profile</h2>
-                                    <p class="custom-subtitle">Ubah data diri kamu</p>
-                                    {{-- <button type="button" class="btn btn-primary custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </button> --}}
-                                    <div class="custom-button">
-                                        <p class="button-text">Edit Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="custom-card">
-                                    <img src="./images/my-password.png" alt="Image 2" class="circle-image">
-                                    <h2 class="custom-title">My Password</h2>
-                                    <p class="custom-subtitle">Ganti kata sandimu</p>
-                                    <div class="custom-button">
-                                        <p class="button-text">Change Now</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     </div>
@@ -492,6 +458,25 @@
             </div>
         </div>
     </div>
+    <script>
+    function addStoryText(id) {
+        let container = document.getElementById('editStoryTextContainer-' + id);
+        let div = document.createElement('div');
+        div.classList.add('d-flex', 'mb-2', 'align-items-start');
+        div.innerHTML = `
+            <input type="hidden" name="story_text_ids[]" value="">
+            <textarea name="story_texts[]" class="form-control mr-2" rows="2"></textarea>
+            <button type="button" class="btn btn-danger btn-sm remove-story-text">Hapus</button>
+        `;
+        container.appendChild(div);
+    }
+
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-story-text')) {
+            e.target.parentElement.remove();
+        }
+    });
+    </script>
     <script>
         document.getElementById('toggleSidebar').addEventListener('click', function () {
             var sidebar = document.getElementById('sidebarMenu');

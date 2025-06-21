@@ -14,6 +14,10 @@
                         <input type="text" class="form-control" name="title" required>
                     </div>
                     <div class="mb-3">
+                        <label for="story_text" class="form-label">Teks Bacaan</label>
+                        <textarea name="story_text" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
                         <label for="description" class="form-label">Deskripsi</label>
                         <textarea name="description" class="form-control"></textarea>
                     </div>
