@@ -10,7 +10,7 @@ class LiteracyQuestion extends Model
     use HasFactory;
 
     protected $table = 'literacy_questions';
-    protected $fillable = ['question_text', 'type', 'essay_answer', 'essay_score'];
+    protected $fillable = ['material_id', 'question_text', 'type', 'essay_answer', 'essay_score'];
 
     public function material()
     {
