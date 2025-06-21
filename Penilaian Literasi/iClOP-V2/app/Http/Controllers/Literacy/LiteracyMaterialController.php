@@ -162,4 +162,15 @@ class LiteracyMaterialController extends Controller
 
         return response()->file($path);
     }
+
+    public function getStoryTexts($id)
+    {
+        $material = LiteracyMaterial::with('storyTexts')->find($id);
+
+        if (!$material) {
+            return response()->json([], 404); // tanggapi dengan error jika tidak ditemukan
+        }
+
+        return response()->json($material->storyTexts);
+    }
 }

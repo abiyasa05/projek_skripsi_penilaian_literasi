@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Literacy;
 
 use App\Http\Controllers\Controller;
 use App\Models\Literacy\LiteracyQuestion;
-use App\Models\Literacy\LiteracyAnswer;
+use App\Models\Literacy\LiteracyStoryText;
 use App\Models\Literacy\LiteracyMaterial;
 use App\Models\Literacy\LiteracyOption;
 use App\Models\Literacy\LiteracyAssessment;
@@ -17,7 +17,10 @@ class LiteracyQuestionController extends Controller
 {
     public function questions()
     {
-        $questions = LiteracyQuestion::orderBy('created_at', 'desc')->get();
+        $questions = LiteracyQuestion::with(['material', 'storyTexts', 'options'])->orderBy('created_at', 'desc')->get();
+            foreach ($questions as $question) {
+            $question->first_story_text = $question->storyTexts->first();
+        }
         $materials = LiteracyMaterial::all();
         $users = User::all();
         return view('literacy.teacher.questions.index', [
@@ -41,24 +44,28 @@ class LiteracyQuestionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'material_id' => 'required|exists:literacy_materials,id',
+            'story_text_id' => 'nullable|exists:literacy_story_texts,id',
             'question_text' => 'required|string',
             'type' => 'required|in:multiple_choice,essay',
         ]);
 
-        $question = LiteracyQuestion::create($validated);
+        $question = LiteracyQuestion::create([
+            'material_id' => $validated['material_id'],
+            'story_text_id' => $validated['story_text_id'] ?? null,
+            'question_text' => $validated['question_text'],
+            'type' => $validated['type'],
+        ]);
 
-        // Jika tipe soal adalah pilihan ganda, simpan opsi jawaban
         if ($request->type === 'multiple_choice' && $request->has('options')) {
             foreach ($request->options as $option) {
                 $question->options()->create([
-                    'option_text' => $option['text'] ?? null, // Gunakan null jika tidak ada teks
-                    'score' => $option['score'] ?? 0, // Pastikan skor selalu ada
+                    'option_text' => $option['text'] ?? null,
+                    'score' => $option['score'] ?? 0,
                     'is_correct' => isset($option['is_correct']) ? 1 : 0,
                 ]);
             }
-        }
-        // Jika tipe soal adalah isian (essay), simpan skor & jawaban yang benar
-        elseif ($request->type === 'essay') {
+        } elseif ($request->type === 'essay') {
             $question->update([
                 'essay_score' => $request->essay_score ?? 0,
                 'essay_answer' => $request->essay_answer ?? null,
@@ -148,7 +155,7 @@ class LiteracyQuestionController extends Controller
                 foreach ($request->input('options', []) as $option) {
                     $isCorrect = isset($option['is_correct']) && $option['is_correct'] ? 1 : 0;
                     $score = isset($option['score']) ? intval($option['score']) : 0;
-                
+
                     if (!empty($option['id'])) {
                         // Update existing option
                         $existingOption = LiteracyOption::find($option['id']);
@@ -168,7 +175,7 @@ class LiteracyQuestionController extends Controller
                             'is_correct' => $isCorrect,
                         ]);
                     }
-                }                
+                }
             }
 
             DB::commit();
