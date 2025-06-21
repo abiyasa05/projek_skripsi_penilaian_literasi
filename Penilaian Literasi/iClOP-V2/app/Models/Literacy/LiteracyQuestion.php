@@ -12,6 +12,21 @@ class LiteracyQuestion extends Model
     protected $table = 'literacy_questions';
     protected $fillable = ['question_text', 'type', 'essay_answer', 'essay_score'];
 
+    public function material()
+    {
+        return $this->belongsTo(LiteracyMaterial::class, 'material_id');
+    }
+
+    public function storyTexts()
+    {
+        return $this->hasMany(
+            LiteracyStoryText::class,
+            'material_id',
+            'material_id'
+        );
+    }
+
+
     public function answers()
     {
         return $this->hasMany(LiteracyAnswer::class, 'question_id');
