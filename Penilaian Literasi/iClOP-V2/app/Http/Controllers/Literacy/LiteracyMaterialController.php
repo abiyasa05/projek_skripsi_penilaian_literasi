@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Literacy;
 use App\Http\Controllers\Controller;
 use App\Models\Literacy\LiteracyMaterial;
 use App\Models\Literacy\LiteracyQuestion;
+use App\Models\Literacy\LiteracyStoryText;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -39,6 +40,7 @@ class LiteracyMaterialController extends Controller
     {
         $request->validate([
             'title' => 'required|string',
+            'story_text' => 'nullable|string',
             'description' => 'nullable|string',
             'file_path' => 'nullable|file|mimes:pdf,doc,docx|max:1048576'
         ]);
@@ -51,12 +53,21 @@ class LiteracyMaterialController extends Controller
             $filePath = str_replace('public/', '', $path); // Simpan path relatif
         }
 
-        LiteracyMaterial::create([
+        // Buat materi utama
+        $material = LiteracyMaterial::create([
             'title' => $request->title,
             'description' => $request->description,
             'file_path' => $filePath,
             'user_id' => auth()->id()
         ]);
+
+        // Simpan story_text jika ada
+        if (!empty(trim($request->story_text))) {
+            LiteracyStoryText::create([
+                'material_id' => $material->id,
+                'story_text' => $request->story_text
+            ]);
+        }
 
         return redirect()->route('literacy_teacher_materials');
     }
@@ -72,8 +83,11 @@ class LiteracyMaterialController extends Controller
         $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx,txt|max:1048576'
-            
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,txt|max:1048576',
+            'story_texts' => 'array',
+            'story_texts.*' => 'nullable|string',
+            'story_text_ids' => 'array',
+            'story_text_ids.*' => 'nullable|integer',
         ]);
 
         $material = LiteracyMaterial::findOrFail($id);
@@ -92,8 +106,35 @@ class LiteracyMaterialController extends Controller
         $material->update([
             'title' => $request->title,
             'description' => $request->description,
-            'file_path' => $filePath
+            'file_path' => $filePath,
         ]);
+
+        // Update, Tambah, dan Hapus Story Texts
+        $existingIds = $material->storyTexts->pluck('id')->toArray(); // semua ID lama
+        $sentIds = $request->input('story_text_ids', []);
+        $texts = $request->input('story_texts', []);
+
+        foreach ($texts as $index => $text) {
+            $id = $sentIds[$index] ?? null;
+            $cleaned = trim($text);
+
+            if ($id && in_array($id, $existingIds)) {
+                // Update
+                LiteracyStoryText::where('id', $id)->update([
+                    'story_text' => $cleaned
+                ]);
+            } elseif (!$id && !empty($cleaned)) {
+                // Tambah baru
+                LiteracyStoryText::create([
+                    'material_id' => $material->id,
+                    'story_text' => $cleaned
+                ]);
+            }
+        }
+
+        // Hapus yang tidak dikirim lagi
+        $deletedIds = array_diff($existingIds, array_filter($sentIds));
+        LiteracyStoryText::destroy($deletedIds);
 
         return redirect()->route('literacy_teacher_materials');
     }
