@@ -434,8 +434,8 @@
                             <!-- Pilihan Materi -->
                             <div class="mb-3">
                                 <label for="material_id" class="form-label">Materi</label>
-                                <select name="material_id" class="form-control" id="materialSelect" required>
-                                    <option value="">Pilih Materi</option>
+                                <select class="form-select" name="material_id" class="form-control" id="materialSelect" required>
+                                    <option value="">-- Pilih Materi --</option>
                                     @foreach ($materials as $material)
                                         <option value="{{ $material->id }}">{{ $material->title }}</option>
                                     @endforeach
