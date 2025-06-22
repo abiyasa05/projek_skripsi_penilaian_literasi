@@ -370,7 +370,7 @@
                     <div class="col-span-12 lg:col-span-9 space-y-4">
 
                         {{-- ===================== PILIHAN GANDA ===================== --}}
-                        <h4 class="text-lg font-semibold mb-2">Soal Pilihan Ganda</h4>
+                        <h4 class="text-lg font-semibold mb-2">Bagian 1: Pilihan Ganda</h4>
                         @php $mcGlobalNumber = 0; @endphp
                         @foreach ($questionsByMaterial as $materialId => $materialQuestions)
                             @php
@@ -438,7 +438,7 @@
                         @endforeach
 
                         {{-- ===================== ISIAN / ESSAY ===================== --}}
-                        <h4 class="text-lg font-semibold mt-6 mb-2">Soal Isian</h4>
+                        <h4 class="text-lg font-semibold mt-6 mb-2">Bagian 2: Isian</h4>
                         @php $essayGlobalNumber = 0; @endphp
                         @foreach ($questionsByMaterial as $materialId => $materialQuestions)
                             @php
