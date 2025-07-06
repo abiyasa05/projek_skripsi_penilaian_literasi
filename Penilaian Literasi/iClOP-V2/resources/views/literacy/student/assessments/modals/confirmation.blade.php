@@ -1,3 +1,5 @@
+@include('literacy.student.assessments.modals.loading')
+
 <!-- Modal Konfirmasi -->
 <div class="modal fade" id="confirmSubmitModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -19,30 +21,57 @@
 
 <!-- Skrip JavaScript untuk Submit Assessment -->
 <script>
+    function showLoadingFeedback() {
+        $('#loadingIcon').show();
+        $('#successIcon').hide();
+        $('#errorIcon').hide();
+        $('#loadingText').text("Mohon tunggu, sedang menyelesaikan asesmen...");
+        $('#loadingModal').modal({backdrop: 'static', keyboard: false});
+        $('#loadingModal').modal('show');
+    }
+
+    function showSuccessFeedback() {
+        $('#loadingIcon').hide();
+        $('#successIcon').show();
+        $('#errorIcon').hide();
+        $('#loadingText').text("Berhasil menyelesaikan asesmen!");
+    }
+
+    function showErrorFeedback(message) {
+        $('#loadingIcon').hide();
+        $('#successIcon').hide();
+        $('#errorIcon').show();
+        $('#loadingText').text(message || "Terjadi kesalahan saat menyelesaikan asesmen.");
+    }
+
     function submitAssessment() {
-        var assessmentId = {{ $assessment->id ?? 'null' }}; // Pastikan ID ada
+        var assessmentId = {{ $assessment->id ?? 'null' }};
 
         if (!assessmentId) {
             alert("Terjadi kesalahan: ID asesmen tidak ditemukan.");
             return;
         }
 
+        $('#confirmSubmitModal').modal('hide');
+        showLoadingFeedback();
+
         $.ajax({
-            url: "/literacy/student/assessment/submit/" + assessmentId, // Perbaiki URL sesuai route
+            url: "/literacy/student/assessment/submit/" + assessmentId,
             type: "POST",
             headers: {
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content') // Pastikan CSRF Token dikirim
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                alert(response.message);
-                window.location.href = "/literacy/student/assessments"; // Redirect ke halaman indeks asesmen
+                showSuccessFeedback();
+                setTimeout(function() {
+                    $('#loadingModal').modal('hide');
+                    window.location.href = "/literacy/student/assessments";
+                }, 2000);
             },
             error: function(xhr) {
                 console.error(xhr);
-                alert(xhr.responseJSON?.error || "Gagal menyelesaikan asesmen.");
+                showErrorFeedback(xhr.responseJSON?.error || "Gagal menyelesaikan asesmen.");
             }
         });
-
-        $('#confirmSubmitModal').modal('hide'); // Tutup modal setelah klik tombol
     }
 </script>
