@@ -169,27 +169,44 @@
 
     <title>Tab Example</title>
 
-    <!-- CSS Bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- ======  CSS  ====== -->
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+        crossorigin="anonymous">
+
+    <!-- Bootstrap Icons (untuk bi bi-check-circle-fill, dll.) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Font Awesome (jika masih dipakai di tempat lain) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+
+    <!-- Google Font – Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Custom style -->
     <link href="style.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
-    <!-- JavaScript Bootstrap -->
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
+
+
+    <!-- ======  JavaScript  ====== -->
+    <!-- jQuery (dibutuhkan DataTables) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <!-- Place these in the <head> section -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 
+    <!-- Bootstrap 5 JS bundle (sudah termasuk Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- DataTables core -->
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+    <!-- Ekstensi DataTables Buttons + export -->
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/dataTables.buttons.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.0.0/js/buttons.html5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <script>
 
@@ -495,17 +512,18 @@
                         </form>
                     </div>
                 </div>
+                @include('literacy.teacher.generate_questions.modals.loading')
             </main>
         </div>
     </div>
 
     <!-- Modal Pilih Teks Bacaan -->
-    <div class="modal fade" id="modalPilihTeks" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
+    <div class="modal fade" id="modalPilihTeks" tabindex="-1" aria-labelledby="modalPilihTeksLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Pilih Teks Bacaan</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title" id="modalPilihTeksLabel">Pilih Teks Bacaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body" id="listTeksBacaan">
                     <p>Memuat teks bacaan...</p>
@@ -513,6 +531,96 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const aiForm = document.getElementById('aiForm');
+            const contentElement = document.getElementById('content');
+            const resetButton = document.getElementById('resetButton');
+
+            const loadingModalEl = document.getElementById('loadingModal');
+            const loadingModal = new bootstrap.Modal(loadingModalEl, {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            const loadingIcon = document.getElementById('loadingIcon');
+            const successIcon = document.getElementById('successIcon');
+            const errorIcon = document.getElementById('errorIcon');
+            const loadingText = document.getElementById('loadingText');
+
+            function showLoading() {
+                loadingIcon.style.display = 'inline-block';
+                successIcon.style.display = 'none';
+                errorIcon.style.display = 'none';
+                loadingText.innerText = "Mohon tunggu, sedang menghasilkan soal...";
+                loadingModal.show();
+            }
+
+            function showSuccess() {
+                loadingIcon.style.display = 'none';
+                successIcon.style.display = 'block';
+                errorIcon.style.display = 'none';
+                loadingText.innerText = "Berhasil menghasilkan soal!";
+            }
+
+            function showError(message) {
+                loadingIcon.style.display = 'none';
+                successIcon.style.display = 'none';
+                errorIcon.style.display = 'block';
+                loadingText.innerText = message || "Terjadi kesalahan saat menghasilkan soal.";
+            }
+
+            aiForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+                showLoading();
+
+                try {
+                    let payload = {
+                        material_id: document.getElementById('material_id').value,
+                        question_type: document.getElementById('question_type').value,
+                        question_count: parseInt(document.getElementById('question_count').value)
+                    };
+
+                    let response = await fetch("{{ route('literacy_teacher_generate_from_ai') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": '{{ csrf_token() }}',
+                            "Accept": "application/json",
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    let data = await response.json();
+
+                    if (response.ok) {
+                        let formattedText = data.generated_questions;
+                        if (formattedText) {
+                            formattedText = formattedText.replace(/Soal Pilihan Ganda:/g, '**Soal Pilihan Ganda:**');
+                            formattedText = formattedText.replace(/Soal Isian:/g, '**Soal Isian:**');
+                        }
+                        contentElement.innerText = formattedText || "Soal berhasil dibuat, tapi tidak ada data.";
+                        showSuccess();
+                        setTimeout(() => loadingModal.hide(), 2000);
+                    } else {
+                        contentElement.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
+                        showError(data.message);
+                        setTimeout(() => loadingModal.hide(), 2500);
+                    }
+                } catch (error) {
+                    contentElement.innerText = "Gagal menghubungi server!";
+                    console.error("Error:", error);
+                    showError("Gagal menghubungi server!");
+                    setTimeout(() => loadingModal.hide(), 2500);
+                }
+            });
+
+            resetButton.addEventListener('click', function () {
+                contentElement.innerText = 'Hasil generate soal akan muncul di sini...';
+            });
+        });
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -672,60 +780,6 @@
         document.getElementById('toggleSidebar').addEventListener('click', function () {
             var sidebar = document.getElementById('sidebarMenu');
             sidebar.classList.toggle('active');
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const aiForm = document.getElementById('aiForm');
-            const contentElement = document.getElementById('content');
-            const resetButton = document.getElementById('resetButton');
-
-            aiForm.addEventListener('submit', async function (event) {
-                event.preventDefault();
-
-                const formData = new FormData(aiForm);
-                contentElement.innerText = "Menghasilkan pertanyaan...";
-
-                try {
-                    let payload = {
-                        material_id: document.getElementById('material_id').value,
-                        question_type: document.getElementById('question_type').value,
-                        question_count: parseInt(document.getElementById('question_count').value)
-                    };
-
-                    let response = await fetch("{{ route('literacy_teacher_generate_from_ai') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": '{{ csrf_token() }}',
-                            "Accept": "application/json",
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    let data = await response.json();
-
-                    if (response.ok) {
-                        // Mengubah output untuk menggunakan label yang lebih user-friendly
-                        let formattedText = data.generated_questions;
-                        if (formattedText) {
-                            formattedText = formattedText.replace(/Soal Pilihan Ganda:/g, '**Soal Pilihan Ganda:**');
-                            formattedText = formattedText.replace(/Soal Isian:/g, '**Soal Isian:**');
-                        }
-                        contentElement.innerText = formattedText || "Soal berhasil dibuat, tapi tidak ada data.";
-                    } else {
-                        contentElement.innerText = "Error: " + (data.message || "Terjadi kesalahan.");
-                    }
-                } catch (error) {
-                    contentElement.innerText = "Gagal menghubungi server!";
-                    console.error("Error:", error);
-                }
-            });
-
-            resetButton.addEventListener('click', function () {
-                contentElement.innerText = 'Hasil generate soal akan muncul di sini...';
-            });
         });
     </script>
 
