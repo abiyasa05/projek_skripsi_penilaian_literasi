@@ -30,16 +30,14 @@ class FileMaterialRequest(BaseModel):
     file_name: str
     question_type: str
     question_count: int
-    start_page: int = 10
+    start_page: int = 24
 
 class FeedbackRequest(BaseModel):
     user_answer: str
     expected_answer: str
+    question_text: str
 
 feedback_cache = {}
-
-def potong_konten(text: str, max_chars: int = 5000):
-    return text[:max_chars] if len(text) > max_chars else text
 
 @app.post("/generate-from-file/")
 async def generate_from_file(request: FileMaterialRequest):
@@ -62,55 +60,135 @@ async def generate_from_file(request: FileMaterialRequest):
         if not text.strip():
             raise HTTPException(status_code=400, detail="Isi file kosong atau tidak terbaca.")
 
-        content_bersih = potong_konten(text.strip())
+        # ==== PROMPT INSTRUKSI BERDASARKAN JENIS SOAL ====
+        if request.question_type == "multiple_choice":
+            soal_instruksi = f"""
+1. Ambil satu paragraf panjang dari teks.
+2. Buat **{mc_count} soal pilihan ganda** dari paragraf tersebut.
+3. Soal harus berdasarkan informasi yang tertulis langsung dalam paragraf (eksplisit).
+4. Hindari soal yang:
+   - Mengandung simpulan di luar isi
+   - Menambahkan tokoh, nama, atau kejadian di luar paragraf
+   - Jawabannya tidak bisa ditemukan dari paragraf
+5. Topik soal mencakup:
+   - Ide pokok paragraf
+   - Kalimat utama
+   - Sinonim atau antonim (jika ada kata yang mendukung)
+   - Informasi eksplisit dari kalimat dalam paragraf
+6. Gunakan bahasa sederhana, sesuai siswa SD kelas 3–4.
+7. Bobot setiap soal **1–2**, berdasarkan tingkat kesulitan.
+8. Gunakan format berikut:
 
-        prompt = f"""
-Buat soal latihan berdasarkan teks materi berikut untuk siswa SD kelas 3.
+**Paragraf:**
+"[Isi paragraf]"
 
-**Instruksi:**
-1. Buat total {request.question_count} soal dengan rincian:
-   - Soal pilihan ganda: {mc_count}
-   - Soal isian: {essay_count}
-
-2. **Untuk soal isian:**
-   - Ambil kutipan **minimal dua kalimat yang saling terhubung** dari teks sebagai dasar soal
-   - Awali dengan: **Bacalah kutipan berikut: "[kutipan]"**
-   - Buat pertanyaan berdasarkan kutipan tersebut
-   - Sertakan **jawaban singkat**
-   - Beri bobot antara **3–5** sesuai kompleksitas
-
-3. **Untuk soal pilihan ganda (jika ada):**
-   - Ambil kutipan **1 kalimat yang relevan** dari teks
-   - Buat pertanyaan dan 4 pilihan jawaban (A–D)
-   - Beri jawaban benar dan bobot antara **1–2** sesuai tingkat kesulitan
-
-4. Gunakan bahasa sederhana dan sesuai dengan siswa SD kelas 3.
-
-5. Jangan menambahkan informasi di luar teks materi.
-
-**Format Output:**
-""" + ("""
 **Soal Pilihan Ganda:**
-1. Bacalah kutipan berikut: "[2 kalimat atau lebih dari teks]"
-   Pertanyaan: [Pertanyaan]
-   A. [Opsi A]
-   B. [Opsi B]
-   C. [Opsi C]
-   D. [Opsi D]
-   Jawaban: [Huruf Opsi]
-   Bobot: [1 atau 2]
-""" if mc_count > 0 else "") + ("""
-
-**Soal Isian:**
-1. Bacalah kutipan berikut: "[2 kalimat atau lebih dari teks]". [Pertanyaan]
-   Jawaban: [Jawaban]
-   Bobot: [3 - 5]
-""" if essay_count > 0 else "") + f"""
+1. [Pertanyaan]
+   A. ...
+   B. ...
+   C. ...
+   D. ...
+   Jawaban: ...
+   Bobot: ...
 
 ---
 
-**Materi:**
-{content_bersih}
+✅ Contoh soal:
+
+**Paragraf:**
+"Pak Budi memelihara ayam, bebek, dan kambing. Setiap pagi, ia memberi makan ternaknya dengan penuh kasih sayang."
+
+**Contoh Soal Pilihan Ganda:**
+1. Apa hewan yang dipelihara Pak Budi?
+   A. Kucing
+   B. Ayam dan kambing
+   C. Anjing dan bebek
+   D. Ikan dan sapi  
+   Jawaban: B  
+   Bobot: 1
+
+2. Apa sinonim dari kata 'ternak' dalam paragraf tersebut?
+   A. Hewan peliharaan  
+   B. Sayuran  
+   C. Alat tani  
+   D. Makanan ternak  
+   Jawaban: A  
+   Bobot: 2
+""".strip()
+
+        elif request.question_type == "essay":
+            soal_instruksi = f"""
+1. Ambil satu paragraf panjang dari teks.
+2. Buat **{essay_count} soal isian** dari paragraf tersebut.
+3. Soal harus berasal dari informasi eksplisit yang tertulis dalam paragraf.
+4. Hindari soal yang:
+   - Mengandung penalaran atau simpulan dari luar isi
+   - Mengandung tokoh, tempat, atau kejadian tambahan
+5. Topik soal mencakup:
+   - Ide pokok paragraf
+   - Kalimat penting
+   - Karakter tokoh
+   - Sinonim atau antonim (jika tersedia dalam paragraf)
+6. Gunakan bahasa sederhana, sesuai siswa SD kelas 3–4.
+7. **Ingat: Bobot soal isian HARUS antara 3 hingga 5. Tidak boleh menggunakan bobot 1 atau 2.**
+8. Gunakan format berikut:
+
+**Paragraf:**
+"[Isi paragraf]"
+
+**Soal Isian:**
+1. [Pertanyaan]
+   Jawaban: ...
+   Bobot: [3, 4, atau 5 saja — bukan angka lain]
+
+---
+
+✅ Contoh soal (ikuti strukturnya):
+
+**Paragraf:**
+"Pak Ali menanam padi di sawah setiap musim tanam. Ia bekerja keras agar panennya berhasil."
+
+**Contoh Soal Isian:**
+1. Apa yang ditanam Pak Ali di sawah?  
+   Jawaban: Padi  
+   Bobot: 3
+
+2. Mengapa Pak Ali bekerja keras?  
+   Jawaban: Agar panennya berhasil  
+   Bobot: 4
+
+3. Apa sinonim dari kata 'bekerja keras' dalam paragraf tersebut?  
+   Jawaban: Rajin atau tekun  
+   Bobot: 5
+""".strip()
+
+        # ==== FINAL PROMPT ====
+        prompt = f"""
+Kamu adalah asisten guru SD kelas 3 dan 4.
+
+Tugasmu adalah membuat soal literasi dari teks di bawah ini. Soal HARUS berdasarkan isi teks, tanpa menambahkan informasi dari luar.
+
+---
+
+### 🎯 Tujuan:
+Buat **{request.question_count} soal literasi** berdasarkan **satu paragraf** untuk masing-masing jenis soal.
+
+---
+
+### 📌 Instruksi Umum:
+- Gunakan paragraf berbeda untuk soal pilihan ganda dan isian (jika kedua jenis digunakan).
+- Jangan menambahkan nama tokoh, tempat, atau kejadian di luar isi paragraf.
+- Bahasa harus sederhana dan mudah dipahami siswa SD.
+
+---
+
+### 📌 Instruksi Soal:
+{soal_instruksi}
+
+---
+
+### 📚 Teks:
+{text.strip()}
 """.strip()
 
         logging.info("Mengirim prompt ke Ollama...")
@@ -146,15 +224,17 @@ async def generate_feedback(request: FeedbackRequest):
     try:
         user_answer = request.user_answer.strip()
         expected_answer = request.expected_answer.strip()
+        question_text = request.question_text.strip()
 
-        prompt_hash = hashlib.sha256(f"{user_answer}|{expected_answer}".encode()).hexdigest()
+        prompt_hash = hashlib.sha256(f"{user_answer}|{expected_answer}|{question_text}".encode()).hexdigest()
         if prompt_hash in feedback_cache:
             logging.info("Feedback dari cache.")
             return {"feedback": feedback_cache[prompt_hash]}
 
         prompt = f"""
-Kamu adalah asisten pengajar untuk siswa SD kelas 3. Siswa memberikan jawaban berikut untuk soal isian.
+Kamu adalah asisten pengajar untuk siswa SD kelas 3. Berikut ini adalah soal isian, jawaban siswa, dan jawaban ideal.
 
+**Soal:** {question_text}
 **Jawaban Siswa:** {user_answer}
 **Jawaban Ideal:** {expected_answer}
 
@@ -162,7 +242,7 @@ Beri feedback singkat dan membangun, maksimal 2 kalimat. Gunakan bahasa yang mud
 """
 
         logging.info("Mengirim prompt feedback ke Ollama...")
-        async with httpx.AsyncClient(timeout=60) as client:
+        async with httpx.AsyncClient(timeout=300) as client:
             response = await client.post(OLLAMA_URL, json={
                 "model": "llama3.1:latest",
                 "prompt": prompt,

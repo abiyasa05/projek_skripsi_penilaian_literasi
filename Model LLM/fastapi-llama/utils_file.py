@@ -2,7 +2,7 @@ import os
 from docx import Document
 import fitz
 
-def read_text_from_file(filepath: str, start_page: int = 0, max_chars: int = 3000) -> str:
+def read_text_from_file(filepath: str, start_page: int = 0, max_chars: int = 5000) -> str:
     ext = os.path.splitext(filepath)[1].lower()
 
     try:
