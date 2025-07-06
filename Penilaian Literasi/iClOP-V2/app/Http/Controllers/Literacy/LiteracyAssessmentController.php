@@ -245,7 +245,7 @@ class LiteracyAssessmentController extends Controller
                         $correctWeight += $weight;
                     } else {
                         try {
-                            $apiResponse = Http::timeout(10)->post('http://127.0.0.1:8010/generate-feedback/', [
+                            $apiResponse = Http::timeout(300)->post('http://127.0.0.1:8010/generate-feedback/', [
                                 'user_answer' => $answer->answer_text,
                                 'expected_answer' => $bestMatch,
                                 'question_text' => $question->question_text,
